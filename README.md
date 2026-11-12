@@ -94,11 +94,10 @@ To apply this schema:
 
 ---
 
-## 🔐 Admin Authentication Credentials
+## 🔐 Administrator Portal
 
-- **Admin Login Route:** `
-- **Authorized Emails:** `
-- **Default Sandbox Password:** 
+- **Admin Login Route:** `/admin/login`
+- Access is restricted exclusively to authorized administrators via secure Supabase authentication. No default credentials or administrative emails are published.
 
 ---
 
