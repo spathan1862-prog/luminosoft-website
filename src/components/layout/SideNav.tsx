@@ -14,7 +14,9 @@ import {
   MessageSquare, 
   ChevronRight,
   Play,
-  Sparkles
+  Sparkles,
+  Server,
+  Smartphone
 } from 'lucide-react';
 import { useSettings } from '../../context/SettingsContext';
 import { useAuth } from '../../context/AuthContext';
@@ -58,8 +60,10 @@ export const SideNav: React.FC<SideNavProps> = ({ isOpen, onClose }) => {
     { label: 'Home', path: '/', icon: Home, desc: 'Luminosoft Official Portal' },
     { label: 'Our Applications', path: '/apps', icon: Grid, desc: 'Software Marketplace & Downloads' },
     { label: 'Our Projects', path: '/projects', icon: Briefcase, desc: 'Portfolio of Live Client Websites' },
-    { label: 'Get Your Website', path: '/#get-website', icon: Sparkles, desc: 'Request Web Development Quote', isHash: true },
     { label: 'Website Development', path: '/website-development', icon: Code2, desc: 'Custom Sites, E-commerce, Portals' },
+    { label: 'Custom Software & CRM', path: '/software-development', icon: Server, desc: 'Windows Desktop & Business Systems' },
+    { label: 'Mobile App Development', path: '/app-development', icon: Smartphone, desc: 'Native Android APKs & Solutions' },
+    { label: 'Get Your Website', path: '/#get-website', icon: Sparkles, desc: 'Request Web Development Quote', isHash: true },
     { label: 'Video Tutorials', path: '/#tutorials', icon: Play, desc: 'Step-by-step Software Guides', isHash: true },
     { label: 'About Us', path: '/about', icon: Info, desc: 'Who We Are & Technology Vision' },
     { label: 'Contact Us', path: '/contact', icon: Mail, desc: 'Get in Touch & Client Enquiries' },

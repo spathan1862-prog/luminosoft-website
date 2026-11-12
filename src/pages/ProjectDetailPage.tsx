@@ -3,6 +3,8 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { PageLayout } from '../components/layout/PageLayout';
 import { fetchProjectBySlug } from '../lib/api';
 import { WebProject } from '../types';
+import { SEOHead } from '../components/seo/SEOHead';
+import { createBreadcrumbSchema, BASE_URL } from '../components/seo/schemaHelpers';
 import { 
   ExternalLink, 
   ArrowLeft, 
@@ -75,8 +77,39 @@ export const ProjectDetailPage: React.FC = () => {
     ? project.screenshots
     : [project.image];
 
+  const projectTitle = `${project.title} Case Study – Web Development Project | Luminosoft`;
+  const projectDesc = project.short_description || `${project.title} web engineering and development case study by Luminosoft.`;
+
+  const projectSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'CreativeWork',
+    name: project.title,
+    description: projectDesc,
+    url: `${BASE_URL}/projects/${project.slug}`,
+    image: project.image,
+    creator: {
+      '@type': 'Organization',
+      name: 'Luminosoft',
+      url: BASE_URL
+    }
+  };
+
+  const breadcrumbSchema = createBreadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'Projects', url: '/projects' },
+    { name: project.title, url: `/projects/${project.slug}` }
+  ]);
+
   return (
     <PageLayout>
+      <SEOHead
+        title={projectTitle}
+        description={projectDesc}
+        canonicalUrl={`${BASE_URL}/projects/${project.slug}`}
+        keywords={`${project.title}, ${project.category}, web development case study, Luminosoft client projects, ${project.technologies.join(', ')}`}
+        structuredData={[projectSchema, breadcrumbSchema]}
+      />
+
       {/* Breadcrumb & Navigation */}
       <section className="bg-slate-50 border-b border-slate-200/80 py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">

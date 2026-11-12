@@ -2,10 +2,18 @@ import React from 'react';
 import { PageLayout } from '../components/layout/PageLayout';
 import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { SEOHead } from '../components/seo/SEOHead';
+import { BASE_URL } from '../components/seo/schemaHelpers';
 
 export const TermsPage: React.FC = () => {
   return (
     <PageLayout>
+      <SEOHead
+        title="Terms & Conditions | Luminosoft"
+        description="Terms and conditions governing the use of Luminosoft official website, software development services, and application downloads."
+        canonicalUrl={`${BASE_URL}/terms`}
+        keywords="Luminosoft terms of service, terms and conditions"
+      />
       <section className="py-16 bg-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
           <Link

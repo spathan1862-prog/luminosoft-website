@@ -1,7 +1,14 @@
 import React, { useState } from 'react';
+import { useLocation, Link } from 'react-router-dom';
 import { PageLayout } from '../components/layout/PageLayout';
 import { WebsiteEnquiryForm } from '../components/enquiry/WebsiteEnquiryForm';
 import { WebsiteType } from '../types';
+import { SEOHead } from '../components/seo/SEOHead';
+import { 
+  createServiceSchema, 
+  createBreadcrumbSchema,
+  BASE_URL 
+} from '../components/seo/schemaHelpers';
 import { 
   Building2, 
   ShoppingBag, 
@@ -16,19 +23,37 @@ import {
   ShieldCheck, 
   Zap, 
   Layout, 
-  Code2
+  Code2,
+  Filter
 } from 'lucide-react';
 
-export const ServicesPage: React.FC = () => {
+interface ServicesPageProps {
+  mode?: 'website' | 'software' | 'apps' | 'all';
+}
+
+type ServiceCategoryFilter = 'all' | 'website' | 'software' | 'apps';
+
+export const ServicesPage: React.FC<ServicesPageProps> = ({ mode }) => {
+  const location = useLocation();
+
+  // Determine effective mode from prop or pathname
+  const effectiveMode: 'website' | 'software' | 'apps' | 'all' = 
+    mode || 
+    (location.pathname === '/software-development' ? 'software' : 
+     location.pathname === '/app-development' ? 'apps' : 
+     'website');
+
+  const [activeCategory, setActiveCategory] = useState<ServiceCategoryFilter>(effectiveMode);
   const [selectedServiceForEnquiry, setSelectedServiceForEnquiry] = useState<WebsiteType>('Business Website');
 
   const servicesList = [
     {
+      category: 'website' as const,
       type: 'Business Website' as WebsiteType,
       icon: Building2,
       title: 'Business Website Development',
       badge: 'Corporate & Commercial',
-      subtitle: 'Build brand credibility and generate qualified client inquiries 24/7.',
+      subtitle: 'Build brand credibility and generate qualified client inquiries 24/7 across India.',
       description: 'We build high-converting, mobile-first websites designed specifically for modern businesses, local enterprises, and service companies. Each project includes clean semantic markup, fast loading speeds, on-page SEO metadata, and interactive inquiry forms.',
       deliverables: [
         'Custom modern layout tailored to your brand identity',
@@ -39,6 +64,7 @@ export const ServicesPage: React.FC = () => {
       ]
     },
     {
+      category: 'website' as const,
       type: 'E-commerce Website' as WebsiteType,
       icon: ShoppingBag,
       title: 'E-commerce Website Development',
@@ -54,6 +80,7 @@ export const ServicesPage: React.FC = () => {
       ]
     },
     {
+      category: 'website' as const,
       type: 'Hotel Website' as WebsiteType,
       icon: Hotel,
       title: 'Hotel Website Development',
@@ -69,6 +96,7 @@ export const ServicesPage: React.FC = () => {
       ]
     },
     {
+      category: 'website' as const,
       type: 'Portfolio Website' as WebsiteType,
       icon: UserCheck,
       title: 'Portfolio Website Development',
@@ -84,6 +112,7 @@ export const ServicesPage: React.FC = () => {
       ]
     },
     {
+      category: 'software' as const,
       type: 'Custom Website' as WebsiteType,
       icon: Server,
       title: 'Custom Software Development',
@@ -99,21 +128,7 @@ export const ServicesPage: React.FC = () => {
       ]
     },
     {
-      type: 'Other' as WebsiteType,
-      icon: Smartphone,
-      title: 'Mobile Application Development',
-      badge: 'Android & Cross-Platform',
-      subtitle: 'Smooth, battery-friendly mobile apps with offline-first capabilities.',
-      description: 'We develop native Android applications (APK distribution) and cross-platform apps designed to run flawlessly on budget and flagship devices alike. Fast loading, minimal battery consumption, and responsive 60fps animations.',
-      deliverables: [
-        'Lightweight APK files optimized for low storage footprints',
-        'Offline capability with smart local SQLite/Room caching',
-        'Push notifications, device hardware integration, and sensors',
-        'Google Play Store compliance and direct APK downloads',
-        'Smooth touch gestures and adaptive dark/light layouts'
-      ]
-    },
-    {
+      category: 'software' as const,
       type: 'Custom Website' as WebsiteType,
       icon: Database,
       title: 'CRM Development',
@@ -127,8 +142,77 @@ export const ServicesPage: React.FC = () => {
         'Team performance tracking and daily sales analytics',
         'Secure cloud data storage with granular access controls'
       ]
+    },
+    {
+      category: 'apps' as const,
+      type: 'Other' as WebsiteType,
+      icon: Smartphone,
+      title: 'Mobile Application Development',
+      badge: 'Android & Cross-Platform',
+      subtitle: 'Smooth, battery-friendly mobile apps with offline-first capabilities.',
+      description: 'We develop native Android applications (APK distribution) and cross-platform apps designed to run flawlessly on budget and flagship devices alike. Fast loading, minimal battery consumption, and responsive 60fps animations.',
+      deliverables: [
+        'Lightweight APK files optimized for low storage footprints',
+        'Offline capability with smart local SQLite/Room caching',
+        'Push notifications, device hardware integration, and sensors',
+        'Google Play Store compliance and direct APK downloads',
+        'Smooth touch gestures and adaptive dark/light layouts'
+      ]
     }
   ];
+
+  // Configure SEO metadata based on current mode
+  const seoConfig = {
+    website: {
+      title: 'Website Development Company India | Professional Web Design | Luminosoft',
+      description: 'Luminosoft is a leading website development company in India. We design high-converting business websites, custom e-commerce stores, hotel booking portals, and responsive websites with fast loading speeds.',
+      keywords: 'Website Development Company India, Website Development Services, Web Development Company India, Professional Website Developer, Custom Website Development, Business Website Development, Ecommerce Website Development, Hotel Website Development, Responsive Website Design, Affordable Website Development, Website Development Company Maharashtra, Website Developer Aurangabad, Website Development Company Chhatrapati Sambhajinagar, Website Development Company Jalna',
+      canonicalUrl: `${BASE_URL}/website-development`,
+      badge: 'Comprehensive Web Engineering',
+      h1: 'Website Development Services in India',
+      subtitle: 'From modern responsive business portals to custom software and CRM backends, Luminosoft delivers end-to-end digital solutions that convert visitors into paying clients.',
+      schemaType: 'Website Development Services',
+      breadcrumbLabel: 'Website Development'
+    },
+    software: {
+      title: 'Custom Software Development Company India | Desktop & CRM Solutions | Luminosoft',
+      description: 'Custom software development company in India. Luminosoft builds desktop Windows software, custom CRM portals, billing systems, inventory management software, and offline-first business tools.',
+      keywords: 'Software Development Company India, Custom Software Development, Desktop Software Development, Windows Application Development, CRM Software Development, Billing Software Development, Inventory Management Software, Software Development Company Maharashtra, Jalna, Aurangabad, Chhatrapati Sambhajinagar',
+      canonicalUrl: `${BASE_URL}/software-development`,
+      badge: 'Custom Software Engineering',
+      h1: 'Custom Software Development Company in India',
+      subtitle: 'We engineer bespoke desktop software (Windows 10/11), automated billing systems, offline-first inventory management, and custom CRM portals that streamline business operations.',
+      schemaType: 'Custom Software Development Services',
+      breadcrumbLabel: 'Software Development'
+    },
+    apps: {
+      title: 'Android & Mobile App Development Company India | Native APKs | Luminosoft',
+      description: 'Leading Android app development company in India. Luminosoft builds lightweight, offline-first mobile applications, business Android APKs, and responsive cross-platform apps.',
+      keywords: 'Android App Development, Mobile App Development Company India, Custom Android App Development, Business App Development, Windows and Android Software Development, Mobile App Developer Maharashtra, Android APK Developer',
+      canonicalUrl: `${BASE_URL}/app-development`,
+      badge: 'Mobile & Android Engineering',
+      h1: 'Android & Mobile App Development Company in India',
+      subtitle: 'From lightweight native Android APKs to cross-platform mobile tools with offline database caching, Luminosoft builds high-performance apps tailored for modern workflows.',
+      schemaType: 'Mobile Application Development Services',
+      breadcrumbLabel: 'Mobile App Development'
+    },
+    all: {
+      title: 'Digital Engineering, Web & Software Development Services | Luminosoft India',
+      description: 'Explore full-spectrum website development, custom software engineering, and mobile app development services by Luminosoft in India.',
+      keywords: 'Website Development Company India, Custom Software Development, Android App Development, CRM Development, Luminosoft services',
+      canonicalUrl: `${BASE_URL}/website-development`,
+      badge: 'Full-Stack Digital Solutions',
+      h1: 'Software, Web & App Development Services',
+      subtitle: 'Production-ready websites, custom desktop software, and mobile applications built for modern businesses.',
+      schemaType: 'Digital Engineering Services',
+      breadcrumbLabel: 'Services'
+    }
+  }[effectiveMode];
+
+  const filteredServices = servicesList.filter((s) => {
+    if (activeCategory === 'all') return true;
+    return s.category === activeCategory;
+  });
 
   const handleEnquireService = (type: WebsiteType) => {
     setSelectedServiceForEnquiry(type);
@@ -138,30 +222,98 @@ export const ServicesPage: React.FC = () => {
     }
   };
 
+  const serviceSchema = createServiceSchema({
+    name: seoConfig.h1,
+    description: seoConfig.description,
+    serviceType: seoConfig.schemaType,
+    url: seoConfig.canonicalUrl
+  });
+
+  const breadcrumbSchema = createBreadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: seoConfig.breadcrumbLabel, url: seoConfig.canonicalUrl }
+  ]);
+
   return (
     <PageLayout>
+      <SEOHead
+        title={seoConfig.title}
+        description={seoConfig.description}
+        canonicalUrl={seoConfig.canonicalUrl}
+        keywords={seoConfig.keywords}
+        structuredData={[serviceSchema, breadcrumbSchema]}
+      />
+
       {/* Services Hero Header */}
       <section className="bg-slate-900 text-white py-16 sm:py-24 border-b border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center max-w-3xl">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-400/20 text-blue-400 text-xs font-semibold mb-6">
             <Code2 className="w-3.5 h-3.5" />
-            <span>Comprehensive Web Engineering</span>
+            <span>{seoConfig.badge}</span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight">
-            Website Development Services
+            {seoConfig.h1}
           </h1>
 
           <p className="mt-4 text-sm sm:text-base text-slate-300 leading-relaxed">
-            From modern responsive business portals to custom software and CRM backends, Luminosoft delivers end-to-end digital solutions that convert visitors into paying clients.
+            {seoConfig.subtitle}
           </p>
+
+          {/* Quick Category Filter Pills */}
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
+            <Link
+              to="/website-development"
+              onClick={() => setActiveCategory('website')}
+              className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
+                activeCategory === 'website'
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+              }`}
+            >
+              Website Development
+            </Link>
+            <Link
+              to="/software-development"
+              onClick={() => setActiveCategory('software')}
+              className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
+                activeCategory === 'software'
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+              }`}
+            >
+              Custom Software &amp; CRM
+            </Link>
+            <Link
+              to="/app-development"
+              onClick={() => setActiveCategory('apps')}
+              className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
+                activeCategory === 'apps'
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+              }`}
+            >
+              Android Mobile Apps
+            </Link>
+            <button
+              type="button"
+              onClick={() => setActiveCategory('all')}
+              className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                activeCategory === 'all'
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+              }`}
+            >
+              Show All ({servicesList.length})
+            </button>
+          </div>
         </div>
       </section>
 
       {/* Services List Deep-Dive */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
-          {servicesList.map((service, index) => {
+          {filteredServices.map((service, index) => {
             const Icon = service.icon;
             const isEven = index % 2 === 1;
 
@@ -258,4 +410,3 @@ export const ServicesPage: React.FC = () => {
     </PageLayout>
   );
 };
-

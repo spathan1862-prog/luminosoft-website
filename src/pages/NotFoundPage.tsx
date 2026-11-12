@@ -2,10 +2,16 @@ import React from 'react';
 import { PageLayout } from '../components/layout/PageLayout';
 import { Link } from 'react-router-dom';
 import { Home, ArrowLeft, Search } from 'lucide-react';
+import { SEOHead } from '../components/seo/SEOHead';
 
 export const NotFoundPage: React.FC = () => {
   return (
     <PageLayout>
+      <SEOHead
+        title="404 – Page Not Found | Luminosoft"
+        description="The requested page could not be found on Luminosoft."
+        noIndex={true}
+      />
       <section className="py-24 text-center">
         <div className="max-w-md mx-auto px-4 space-y-6">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-50 text-blue-600 font-extrabold text-2xl">

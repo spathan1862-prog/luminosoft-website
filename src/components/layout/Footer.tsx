@@ -16,12 +16,11 @@ export const Footer: React.FC = () => {
 
   const services = [
     { name: 'Business Website Development', path: '/website-development' },
+    { name: 'Custom Software Development', path: '/software-development' },
+    { name: 'Mobile Application Development', path: '/app-development' },
     { name: 'E-commerce Website Development', path: '/website-development' },
     { name: 'Hotel Website Development', path: '/website-development' },
-    { name: 'Portfolio Website Development', path: '/website-development' },
-    { name: 'Custom Software Development', path: '/website-development' },
-    { name: 'Mobile Application Development', path: '/website-development' },
-    { name: 'CRM & Enterprise Portals', path: '/website-development' },
+    { name: 'CRM & Enterprise Portals', path: '/software-development' },
   ];
 
   const featuredApps = [

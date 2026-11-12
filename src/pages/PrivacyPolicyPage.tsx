@@ -2,10 +2,18 @@ import React from 'react';
 import { PageLayout } from '../components/layout/PageLayout';
 import { ShieldCheck, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { SEOHead } from '../components/seo/SEOHead';
+import { BASE_URL } from '../components/seo/schemaHelpers';
 
 export const PrivacyPolicyPage: React.FC = () => {
   return (
     <PageLayout>
+      <SEOHead
+        title="Privacy Policy | Luminosoft"
+        description="Official Privacy Policy of Luminosoft. Learn how we safeguard your data and respect your confidentiality across our website and software applications."
+        canonicalUrl={`${BASE_URL}/privacy-policy`}
+        keywords="Luminosoft privacy policy, data protection, software security"
+      />
       <section className="py-16 bg-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
           <Link

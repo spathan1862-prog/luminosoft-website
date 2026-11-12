@@ -46,7 +46,10 @@ export function App() {
             <Routes>
               {/* Public Routes */}
               <Route path="/" element={<HomePage />} />
-              <Route path="/website-development" element={<ServicesPage />} />
+              <Route path="/website-development" element={<ServicesPage mode="website" />} />
+              <Route path="/software-development" element={<ServicesPage mode="software" />} />
+              <Route path="/app-development" element={<ServicesPage mode="apps" />} />
+              <Route path="/services" element={<Navigate to="/website-development" replace />} />
               <Route path="/projects" element={<ProjectsPage />} />
               <Route path="/projects/:slug" element={<ProjectDetailPage />} />
               <Route path="/apps" element={<AppsMarketplacePage />} />

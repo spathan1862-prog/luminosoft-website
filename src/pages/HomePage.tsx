@@ -43,6 +43,13 @@ import {
   Cpu
 } from 'lucide-react';
 import { SocialIcons } from '../components/ui/SocialIcons';
+import { SEOHead } from '../components/seo/SEOHead';
+import { 
+  createOrganizationSchema, 
+  createWebSiteSchema, 
+  createLocalBusinessSchema,
+  BASE_URL 
+} from '../components/seo/schemaHelpers';
 
 export const HomePage: React.FC = () => {
   const { settings } = useSettings();
@@ -79,51 +86,58 @@ export const HomePage: React.FC = () => {
     {
       icon: Building2,
       title: 'Business Website Development',
-      description: 'High-converting, responsive websites tailored for commercial enterprises, corporate brands, and local service providers.',
+      description: 'High-converting, responsive websites tailored for commercial enterprises, corporate brands, and local service providers in India.',
       badge: 'Enterprise Grade',
-      image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=600&q=80'
+      image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=600&q=80',
+      path: '/website-development'
     },
     {
       icon: ShoppingBag,
       title: 'E-commerce Website Development',
-      description: 'Full-featured online storefronts with secure checkout flows, product inventory management, and payment gateway integration.',
+      description: 'Full-featured online storefronts with secure checkout flows, product inventory management, and UPI/card payment gateway integration.',
       badge: 'High Conversion',
-      image: 'https://images.unsplash.com/photo-1556742049-0a67c5574f73?auto=format&fit=crop&w=600&q=80'
+      image: 'https://images.unsplash.com/photo-1556742049-0a67c5574f73?auto=format&fit=crop&w=600&q=80',
+      path: '/website-development'
     },
     {
       icon: Hotel,
       title: 'Hotel Website Development',
       description: 'Hospitality websites with interactive room showcases, amenity tours, and direct booking engines that eliminate OTA commissions.',
       badge: 'Direct Booking',
-      image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80'
+      image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80',
+      path: '/website-development'
     },
     {
       icon: UserCheck,
       title: 'Portfolio Website Development',
       description: 'Sleek, personal portfolio sites for professionals, agencies, and creatives to showcase achievements and case studies.',
       badge: 'Personal Brand',
-      image: 'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=600&q=80'
+      image: 'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=600&q=80',
+      path: '/website-development'
     },
     {
       icon: Server,
       title: 'Custom Software Development',
       description: 'Tailored desktop, cloud, and client-server software engineered to solve specific operational bottlenecks in your business.',
       badge: 'Scalable Arch',
-      image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=600&q=80'
+      image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=600&q=80',
+      path: '/software-development'
     },
     {
       icon: Smartphone,
       title: 'Mobile Application Development',
       description: 'Lightweight Android applications with offline-first capabilities, smooth 60fps UI, and battery-friendly performance.',
       badge: 'Native Android',
-      image: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&w=600&q=80'
+      image: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&w=600&q=80',
+      path: '/app-development'
     },
     {
       icon: Database,
       title: 'CRM Development',
       description: 'Custom Customer Relationship Management portals, lead pipeline trackers, and administrative backends with role-based access.',
       badge: 'Data Pipelines',
-      image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=600&q=80'
+      image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=600&q=80',
+      path: '/software-development'
     },
   ];
 
@@ -131,6 +145,18 @@ export const HomePage: React.FC = () => {
 
   return (
     <PageLayout>
+      <SEOHead
+        title="Luminosoft – Website, Custom Software & Mobile App Development Company India"
+        description="Official website of Luminosoft (Lumino Soft), an Indian technology and software development company. We engineer custom business websites, desktop software, Android applications, and CRM solutions."
+        canonicalUrl={`${BASE_URL}/`}
+        keywords="Luminosoft, Lumino Soft, Luminosoft India, Luminosoft Software Company, Luminosoft Official Website, Website Development Company India, Custom Software Development, Android App Development, Desktop Software Development, Hotel Management Software, MedicoManager, Website Development Maharashtra, Jalna, Aurangabad, Chhatrapati Sambhajinagar"
+        structuredData={[
+          createOrganizationSchema(),
+          createWebSiteSchema(),
+          createLocalBusinessSchema()
+        ]}
+      />
+
       {/* =====================================================================
           1. MAIN LUMINOSOFT BRANDING / HERO SECTION
           Hierarchy:
@@ -151,7 +177,7 @@ export const HomePage: React.FC = () => {
           {/* Official Company Badge */}
           <div className="reveal-init inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 border border-blue-200/70 text-blue-700 text-xs font-semibold tracking-wide mb-6 shadow-2xs">
             <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
-            <span>Official Software &amp; Technology Company</span>
+            <span>Official Software &amp; Technology Company • India</span>
           </div>
 
           {/* 1. Official Logo - Strictly Transparent, No Black Box, No Container */}
@@ -159,7 +185,7 @@ export const HomePage: React.FC = () => {
             <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-36 md:h-36 shrink-0 transition-transform duration-300 hover:scale-105">
               <img
                 src="/images/luminosoft-logo.png"
-                alt="Luminosoft Official Logo"
+                alt="Luminosoft Official Logo – Website &amp; Software Development Company India"
                 className="w-full h-full object-contain filter drop-shadow-sm"
               />
             </div>
@@ -182,7 +208,7 @@ export const HomePage: React.FC = () => {
           {/* 4. Short Company Description */}
           <div className="reveal-init delay-300">
             <p className="mt-4 text-sm sm:text-base md:text-lg text-slate-500 max-w-2xl mx-auto leading-relaxed">
-              Luminosoft delivers professional website development, custom software, mobile applications and CRM solutions to help businesses grow digitally.
+              Luminosoft (Lumino Soft) is an Indian software and website development company. We deliver professional website development, custom software, mobile applications and CRM solutions to help businesses grow digitally across Maharashtra and all of India.
             </p>
           </div>
 
@@ -883,7 +909,7 @@ export const HomePage: React.FC = () => {
 
                   <div className="px-6 pb-5 pt-3 border-t border-slate-100 flex items-center justify-between">
                     <Link
-                      to="/website-development"
+                      to={srv.path || '/website-development'}
                       className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-700"
                     >
                       <span>Explore Details</span>

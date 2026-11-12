@@ -2,6 +2,12 @@ import React from 'react';
 import { PageLayout } from '../components/layout/PageLayout';
 import { WebsiteEnquiryForm } from '../components/enquiry/WebsiteEnquiryForm';
 import { useSettings } from '../context/SettingsContext';
+import { SEOHead } from '../components/seo/SEOHead';
+import { 
+  createLocalBusinessSchema, 
+  createBreadcrumbSchema, 
+  BASE_URL 
+} from '../components/seo/schemaHelpers';
 import { 
   Mail, 
   Phone, 
@@ -15,8 +21,30 @@ import { GithubIcon, LinkedinIcon, TwitterIcon } from '../components/ui/SocialIc
 export const ContactPage: React.FC = () => {
   const { settings } = useSettings();
 
+  const breadcrumbSchema = createBreadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'Contact Us', url: '/contact' }
+  ]);
+
+  const contactSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'ContactPage',
+    name: 'Contact Luminosoft',
+    description: 'Get in touch with Luminosoft engineers for website quotes, custom software development, and app inquiries.',
+    url: `${BASE_URL}/contact`,
+    mainEntity: createLocalBusinessSchema()
+  };
+
   return (
     <PageLayout>
+      <SEOHead
+        title="Contact Luminosoft – Web & Software Development Inquiries | Maharashtra, India"
+        description="Contact Luminosoft for website quotes, custom software development, and app inquiries. Located in Badnapur, Jalna & Chhatrapati Sambhajinagar (Aurangabad), Maharashtra."
+        canonicalUrl={`${BASE_URL}/contact`}
+        keywords="Contact Luminosoft, Website Development Company Jalna, Website Developer Aurangabad, Website Development Company Chhatrapati Sambhajinagar, Software Development Company Maharashtra, Luminosoft phone, Luminosoft email"
+        structuredData={[contactSchema, breadcrumbSchema]}
+      />
+
       {/* Header */}
       <section className="bg-slate-900 text-white py-16 sm:py-20 border-b border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center max-w-3xl">

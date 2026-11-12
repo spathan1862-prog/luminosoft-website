@@ -32,6 +32,12 @@ import {
   Sparkles
 } from 'lucide-react';
 import { SocialIcons } from '../components/ui/SocialIcons';
+import { SEOHead } from '../components/seo/SEOHead';
+import { 
+  createSoftwareApplicationSchema, 
+  createBreadcrumbSchema, 
+  BASE_URL 
+} from '../components/seo/schemaHelpers';
 
 export const AppDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -137,8 +143,60 @@ export const AppDetailPage: React.FC = () => {
     return <Globe className="w-4 h-4 text-slate-600" />;
   };
 
+  // Tailored SEO settings per product
+  const getAppSEO = () => {
+    if (app.slug === 'hotel-management') {
+      return {
+        title: 'Luminosoft Hotel Management Software – Billing, PMS & Reservation System',
+        description: 'Complete hotel management system and billing software for hotels, resorts, and lodges. Room reservations, GST invoices, front desk, and offline operations on Windows & Android.',
+        keywords: 'Hotel Management Software, Hotel Management System, Hotel Billing Software, Hotel PMS India, Resort Management Software, Lodge Billing Software, Offline Hotel Software, GST Billing Hotel',
+        category: 'BusinessApplication'
+      };
+    }
+    if (app.slug === 'medico-manager') {
+      return {
+        title: 'MedicoManager – Medical Shop & Pharmacy Billing Software | Luminosoft',
+        description: 'MedicoManager by Luminosoft is comprehensive medical store billing and pharmacy inventory management software. Track expiry dates, batches, GST invoices, and prescription records.',
+        keywords: 'Medical Shop Management Software, Medical Store Billing Software, Pharmacy Inventory Management Software, Chemist Billing Software, Clinic Management Software India',
+        category: 'BusinessApplication'
+      };
+    }
+    return {
+      title: `${app.name} – Download for Windows & Android | Luminosoft`,
+      description: app.short_description || `${app.name} official download by Luminosoft. Secure, verified software for business and productivity.`,
+      keywords: `${app.name}, download ${app.name}, Luminosoft software, ${app.category}`,
+      category: app.category.toLowerCase().includes('game') ? 'GameApplication' : 'BusinessApplication'
+    };
+  };
+
+  const appSEO = getAppSEO();
+
+  const softwareSchema = createSoftwareApplicationSchema({
+    name: app.name,
+    operatingSystem: app.supported_platforms.join(', '),
+    applicationCategory: appSEO.category,
+    description: appSEO.description,
+    downloadUrl: activeDownloads[0]?.download_url,
+    fileSize: app.app_size,
+    softwareVersion: app.version
+  });
+
+  const breadcrumbSchema = createBreadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'Applications', url: '/apps' },
+    { name: app.name, url: `/apps/${app.slug}` }
+  ]);
+
   return (
     <PageLayout>
+      <SEOHead
+        title={appSEO.title}
+        description={appSEO.description}
+        canonicalUrl={`${BASE_URL}/apps/${app.slug}`}
+        keywords={appSEO.keywords}
+        structuredData={[softwareSchema, breadcrumbSchema]}
+      />
+
       {/* Breadcrumb Navigation */}
       <section className="bg-slate-50 border-b border-slate-200/80 py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">

@@ -1,6 +1,12 @@
 import React from 'react';
 import { PageLayout } from '../components/layout/PageLayout';
 import { Link } from 'react-router-dom';
+import { SEOHead } from '../components/seo/SEOHead';
+import { 
+  createOrganizationSchema, 
+  createBreadcrumbSchema, 
+  BASE_URL 
+} from '../components/seo/schemaHelpers';
 import { 
   Building2, 
   Target, 
@@ -16,22 +22,44 @@ import {
 } from 'lucide-react';
 
 export const AboutPage: React.FC = () => {
+  const breadcrumbSchema = createBreadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'About Us', url: '/about' }
+  ]);
+
+  const aboutSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'AboutPage',
+    name: 'About Luminosoft',
+    description: 'Learn about Luminosoft, an Indian technology company founded by Samir Pathan. We specialize in robust website development, custom software engineering, and offline-first solutions.',
+    url: `${BASE_URL}/about`,
+    mainEntity: createOrganizationSchema()
+  };
+
   return (
     <PageLayout>
+      <SEOHead
+        title="About Luminosoft – Software & Technology Company India | Samir Pathan"
+        description="Learn about Luminosoft, an Indian technology company founded by Samir Pathan. We specialize in robust website development, custom software engineering, and offline-first solutions."
+        canonicalUrl={`${BASE_URL}/about`}
+        keywords="About Luminosoft, Samir Pathan, Software Company Maharashtra, Software Development Company India, Luminosoft team, Luminosoft history, Web Development Company India, Jalna, Aurangabad"
+        structuredData={[aboutSchema, breadcrumbSchema]}
+      />
+
       {/* Hero Header */}
       <section className="bg-slate-900 text-white py-16 sm:py-24 border-b border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center max-w-3xl">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-400/20 text-blue-400 text-xs font-semibold mb-6">
             <Building2 className="w-3.5 h-3.5" />
-            <span>About Luminosoft</span>
+            <span>About Luminosoft • Official Company Profile</span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight">
-            Engineering Software for Real-World Impact
+            Engineering Software &amp; Websites for Real-World Impact
           </h1>
 
           <p className="mt-4 text-sm sm:text-base text-slate-300 leading-relaxed">
-            Luminosoft is a technology and software development company focused on building modern digital solutions, business applications and software products.
+            Luminosoft is an Indian software and website development company founded by Samir Pathan. We build high-performance business websites, custom software, Android applications, and offline-first solutions.
           </p>
         </div>
       </section>
@@ -48,7 +76,7 @@ export const AboutPage: React.FC = () => {
                 A Dedicated Software &amp; Digital Engineering Studio
               </h2>
               <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
-                Founded with a strong technical foundation in web technologies, database architecture, and cross-platform desktop development, Luminosoft helps enterprises and organizations replace outdated manual workflows with fast, secure software solutions.
+                Founded by Samir Pathan with a strong technical foundation in web technologies, database architecture, and cross-platform desktop development, Luminosoft helps enterprises across Maharashtra (Badnapur, Jalna, Chhatrapati Sambhajinagar / Aurangabad) and across India replace outdated manual workflows with fast, secure software solutions.
               </p>
               <p className="text-sm text-slate-600 leading-relaxed">
                 Our approach emphasizes clean, maintainable code rather than bloated frameworks or generic templates. Every website and software application we deliver is tailored to our clients' precise business operations, ensuring resilience, sub-second performance, and straightforward management.

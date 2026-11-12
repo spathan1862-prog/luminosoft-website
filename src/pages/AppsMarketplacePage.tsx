@@ -4,6 +4,8 @@ import { AppCard } from '../components/apps/AppCard';
 import { fetchApplications, fetchApplicationCategories } from '../lib/api';
 import { Application, ApplicationCategory } from '../types';
 import { INITIAL_APP_CATEGORIES } from '../lib/initialData';
+import { SEOHead } from '../components/seo/SEOHead';
+import { createBreadcrumbSchema, BASE_URL } from '../components/seo/schemaHelpers';
 import { 
   Grid, 
   Search, 
@@ -79,8 +81,29 @@ export const AppsMarketplacePage: React.FC = () => {
       return new Date(b.release_date || 0).getTime() - new Date(a.release_date || 0).getTime();
     });
 
+  const breadcrumbSchema = createBreadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'Applications Marketplace', url: '/apps' }
+  ]);
+
+  const collectionSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: 'Luminosoft Application Marketplace',
+    description: 'Download official verified business software, hotel management systems, pharmacy billing solutions, and desktop utilities developed by Luminosoft for Windows and Android.',
+    url: `${BASE_URL}/apps`
+  };
+
   return (
     <PageLayout>
+      <SEOHead
+        title="Application Marketplace & Software Downloads | Luminosoft"
+        description="Download official verified business software, hotel management systems, pharmacy billing solutions, and desktop utilities developed by Luminosoft for Windows and Android."
+        canonicalUrl={`${BASE_URL}/apps`}
+        keywords="Luminosoft apps, software marketplace, hotel management software download, pharmacy billing software, Windows desktop apps, Android APK download, medical manager"
+        structuredData={[collectionSchema, breadcrumbSchema]}
+      />
+
       {/* Header */}
       <section className="bg-slate-900 text-white py-16 sm:py-20 border-b border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center max-w-3xl">

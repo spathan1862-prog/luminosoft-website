@@ -4,6 +4,8 @@ import { ProjectCard } from '../components/projects/ProjectCard';
 import { fetchWebProjects } from '../lib/api';
 import { WebProject } from '../types';
 import { INITIAL_PROJECT_CATEGORIES } from '../lib/initialData';
+import { SEOHead } from '../components/seo/SEOHead';
+import { createBreadcrumbSchema, BASE_URL } from '../components/seo/schemaHelpers';
 import { Layers, Search, Filter, Sparkles, ExternalLink, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -41,8 +43,29 @@ export const ProjectsPage: React.FC = () => {
     return matchesCategory && matchesSearch;
   });
 
+  const breadcrumbSchema = createBreadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'Web Projects', url: '/projects' }
+  ]);
+
+  const collectionSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: 'Luminosoft Web Development Projects Portfolio',
+    description: 'Explore production websites and web software engineered by Luminosoft for businesses in India.',
+    url: `${BASE_URL}/projects`
+  };
+
   return (
     <PageLayout>
+      <SEOHead
+        title="Web Development Projects & Client Portfolio | Luminosoft India"
+        description="Browse live web development projects, custom e-commerce portals, and enterprise web solutions engineered by Luminosoft for businesses across India."
+        canonicalUrl={`${BASE_URL}/projects`}
+        keywords="Web development portfolio, Luminosoft projects, custom web design case studies, client websites India, Khan Electrics website, Maharashtra web developer"
+        structuredData={[collectionSchema, breadcrumbSchema]}
+      />
+
       {/* Header */}
       <section className="bg-slate-900 text-white py-16 sm:py-20 border-b border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center max-w-3xl">
