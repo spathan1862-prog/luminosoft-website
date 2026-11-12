@@ -132,7 +132,7 @@ export const AdminDashboardPage: React.FC = () => {
               <div className="text-xs text-slate-500 mt-1 flex items-center gap-2">
                 <span className="text-emerald-600 font-semibold">{publishedProjects} Live</span>
                 <span>•</span>
-                <span>Including Khan Electrics</span>
+                <span>Luminosoft Portfolio</span>
               </div>
             </div>
             <Link
@@ -210,14 +210,14 @@ export const AdminDashboardPage: React.FC = () => {
                   )}
                 </h3>
                 <p className="text-xs text-slate-500">
-                  PostgreSQL database endpoint: <code className="text-slate-800 font-mono">https://vrcpceurhinjzgiseuow.supabase.co</code>
+                  PostgreSQL database endpoint: <code className="text-slate-800 font-mono">{import.meta.env.VITE_SUPABASE_URL || 'https://pixvgshevennznzgdwro.supabase.co'}</code>
                 </p>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
               <a
-                href="https://supabase.com/dashboard"
+                href="https://supabase.com/dashboard/project/pixvgshevennznzgdwro"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors"

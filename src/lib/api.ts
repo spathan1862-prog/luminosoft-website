@@ -2,6 +2,7 @@ import { supabase } from './supabase';
 import { 
   WebProject, 
   Application, 
+  ApplicationCategory,
   WebsiteEnquiry, 
   CompanySettings, 
   ApplicationUpdate,
@@ -12,6 +13,7 @@ import {
 import { 
   INITIAL_PROJECTS, 
   INITIAL_APPLICATIONS, 
+  INITIAL_APP_CATEGORIES,
   INITIAL_COMPANY_SETTINGS,
   INITIAL_YOUTUBE_TUTORIALS 
 } from './initialData';
@@ -19,6 +21,7 @@ import {
 // Local storage keys for resilient fallback
 const LS_PROJECTS_KEY = 'luminosoft_projects_override';
 const LS_APPS_KEY = 'luminosoft_apps_override';
+const LS_APP_CATS_KEY = 'luminosoft_app_categories_override';
 const LS_ENQUIRIES_KEY = 'luminosoft_enquiries_override';
 const LS_SETTINGS_KEY = 'luminosoft_settings_override';
 const LS_TUTORIALS_KEY = 'luminosoft_tutorials_override';
@@ -204,16 +207,10 @@ export async function fetchApplications(): Promise<Application[]> {
   if (!supabase) return localList;
 
   try {
-    let { data, error } = await supabase
+    const { data, error } = await supabase
       .from('applications')
       .select('*, downloads:application_downloads(*), updates:application_updates(*)')
       .order('sort_order', { ascending: true });
-
-    if (error && error.code === 'PGRST205') {
-      const res = await supabase.from('apps').select('*').order('sort_order', { ascending: true });
-      data = res.data;
-      error = res.error;
-    }
 
     if (error || !data || data.length === 0) {
       return localList;
@@ -285,6 +282,27 @@ export async function fetchApplications(): Promise<Application[]> {
   } catch (err) {
     console.warn('Failed to load applications from Supabase, using local fallback:', err);
     return localList;
+  }
+}
+
+export async function fetchApplicationCategories(): Promise<ApplicationCategory[]> {
+  const localCats = getLocal<ApplicationCategory[]>(LS_APP_CATS_KEY, INITIAL_APP_CATEGORIES);
+  if (!supabase) return localCats;
+
+  try {
+    const { data, error } = await supabase
+      .from('application_categories')
+      .select('*')
+      .order('sort_order', { ascending: true });
+
+    if (!error && data && data.length > 0) {
+      setLocal(LS_APP_CATS_KEY, data);
+      return data;
+    }
+    return localCats;
+  } catch (err) {
+    console.warn('Failed to load application categories from Supabase, using local fallback:', err);
+    return localCats;
   }
 }
 
@@ -421,21 +439,29 @@ export async function submitWebsiteEnquiry(enquiry: {
   mobile_number: string;
   email: string;
   organization?: string;
+  business_name?: string;
   website_type?: string;
   budget?: string;
   project_description?: string;
 }): Promise<{ success: boolean; message: string; enquiryId?: string; error?: string }> {
   const enquiryId = `LS-${Date.now().toString().slice(-6)}`;
+  const businessName = (enquiry.business_name || enquiry.organization || '').trim();
+  const projectDesc = enquiry.project_description?.trim() || 'Website Development Inquiry';
+  const websiteType = enquiry.website_type?.trim() || 'Business Website';
+  const budgetVal = enquiry.budget?.trim() || 'Flexible';
   
   const newRecord: WebsiteEnquiry = {
     id: enquiryId,
-    customer_name: enquiry.customer_name,
-    mobile_number: enquiry.mobile_number,
-    email: enquiry.email,
-    organization: enquiry.organization || '',
-    website_type: enquiry.website_type || 'Business Website',
-    budget: enquiry.budget || 'Not Decided',
-    project_description: enquiry.project_description || '',
+    customer_name: enquiry.customer_name.trim(),
+    name: enquiry.customer_name.trim(),
+    mobile_number: enquiry.mobile_number.trim(),
+    phone: enquiry.mobile_number.trim(),
+    email: enquiry.email.trim(),
+    organization: businessName,
+    business_name: businessName,
+    website_type: websiteType,
+    budget: budgetVal,
+    project_description: projectDesc,
     status: 'New',
     is_read: false,
     created_at: new Date().toISOString(),
@@ -447,14 +473,13 @@ export async function submitWebsiteEnquiry(enquiry: {
   if (supabase) {
     try {
       const { error: err1 } = await supabase.from('website_enquiries').insert([{
-        id: crypto.randomUUID(),
         customer_name: newRecord.customer_name,
         phone: newRecord.mobile_number,
         email: newRecord.email,
-        business_name: newRecord.organization,
+        business_name: newRecord.business_name,
         website_type: newRecord.website_type,
         budget: newRecord.budget,
-        project_description: newRecord.project_description || 'Website Development Inquiry',
+        project_description: newRecord.project_description,
         status: 'New',
         is_read: false,
       }]);
@@ -462,16 +487,7 @@ export async function submitWebsiteEnquiry(enquiry: {
       if (!err1) {
         savedToSupabase = true;
       } else {
-        const { error: err2 } = await supabase.from('inquiries').insert([{
-          service_type: `Web: ${newRecord.website_type}`,
-          name: newRecord.customer_name,
-          email: newRecord.email,
-          phone: newRecord.mobile_number,
-          budget: newRecord.budget,
-          details: `${newRecord.project_description || 'Website Request'}\nOrg: ${newRecord.organization || 'N/A'}\nEnquiry ID: ${enquiryId}`,
-          status: 'New'
-        }]);
-        if (!err2) savedToSupabase = true;
+        console.warn('Supabase enquiry insert warning:', err1.message);
       }
     } catch (e: any) {
       console.warn('Supabase enquiry insertion error:', e.message);
@@ -505,11 +521,14 @@ export async function fetchWebsiteEnquiries(): Promise<WebsiteEnquiry[]> {
       const mapped: WebsiteEnquiry[] = data.map((item: any) => ({
         id: item.id,
         customer_name: item.customer_name || item.name || '',
+        name: item.customer_name || item.name || '',
         mobile_number: item.phone || item.mobile_number || '',
+        phone: item.phone || item.mobile_number || '',
         email: item.email || '',
         organization: item.business_name || item.organization || '',
+        business_name: item.business_name || item.organization || '',
         website_type: item.website_type || 'Business Website',
-        budget: item.budget || 'Not Decided',
+        budget: item.budget || 'Flexible',
         project_description: item.project_description || item.details || '',
         status: (item.status as EnquiryStatus) || 'New',
         is_read: Boolean(item.is_read),
@@ -526,36 +545,6 @@ export async function fetchWebsiteEnquiries(): Promise<WebsiteEnquiry[]> {
 
       setLocal(LS_ENQUIRIES_KEY, mapped);
       return mapped;
-    }
-
-    // Fallback: inquiries table
-    const fallbackRes = await supabase
-      .from('inquiries')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (!fallbackRes.error && fallbackRes.data && fallbackRes.data.length > 0) {
-      const mappedFallback: WebsiteEnquiry[] = fallbackRes.data.map((item: any) => ({
-        id: item.id,
-        customer_name: item.name,
-        mobile_number: item.phone || '',
-        email: item.email || '',
-        organization: item.location || '',
-        website_type: item.service_type || 'Business Website',
-        budget: item.budget || 'Not Decided',
-        project_description: item.details || '',
-        status: (item.status as EnquiryStatus) || 'New',
-        is_read: item.status !== 'New',
-        created_at: item.created_at,
-      }));
-
-      localEnquiries.forEach(loc => {
-        if (!mappedFallback.some(m => m.id === loc.id)) {
-          mappedFallback.unshift(loc);
-        }
-      });
-
-      return mappedFallback;
     }
 
     return localEnquiries;
@@ -634,21 +623,6 @@ export async function fetchCompanySettings(): Promise<CompanySettings> {
       };
       setLocal(LS_SETTINGS_KEY, merged);
       return merged;
-    }
-
-    const { data: siteData, error: siteErr } = await supabase.from('site_settings').select('*').limit(1).single();
-    if (!siteErr && siteData) {
-      const mapped: CompanySettings = {
-        ...localSettings,
-        company_name: siteData.company_name || 'Luminosoft',
-        phone: siteData.phone || localSettings.phone,
-        email: siteData.email || localSettings.email,
-        whatsapp: siteData.phone || localSettings.whatsapp,
-        business_address: siteData.location || localSettings.business_address,
-        website_url: siteData.website || localSettings.website_url,
-      };
-      setLocal(LS_SETTINGS_KEY, mapped);
-      return mapped;
     }
 
     return localSettings;

@@ -8,7 +8,7 @@ import {
   MessageSquare, 
   ArrowUpRight
 } from 'lucide-react';
-import { GithubIcon, LinkedinIcon, TwitterIcon } from '../ui/SocialIcons';
+import { GithubIcon, LinkedinIcon, TwitterIcon, YoutubeIcon, InstagramIcon } from '../ui/SocialIcons';
 import { useSettings } from '../../context/SettingsContext';
 
 export const Footer: React.FC = () => {
@@ -76,10 +76,10 @@ export const Footer: React.FC = () => {
             </div>
 
             {/* Social Links */}
-            <div className="flex items-center gap-3 pt-3">
-              {settings.social_links?.github && (
+            <div className="flex items-center gap-3 pt-3 flex-wrap">
+              {Boolean(settings.social_links?.github?.trim()) && (
                 <a
-                  href={settings.social_links.github}
+                  href={settings.social_links!.github}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="p-2 rounded-lg bg-slate-900 text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
@@ -88,33 +88,61 @@ export const Footer: React.FC = () => {
                   <GithubIcon className="w-4 h-4" />
                 </a>
               )}
-              <a
-                href={`https://wa.me/${settings.whatsapp.replace(/[^0-9]/g, '')}?text=Hello%20Luminosoft`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2 rounded-lg bg-slate-900 text-slate-400 hover:text-emerald-400 hover:bg-slate-800 transition-colors"
-                aria-label="WhatsApp Contact"
-              >
-                <MessageSquare className="w-4 h-4" />
-              </a>
-              <a
-                href={settings.social_links?.linkedin || '#'}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2 rounded-lg bg-slate-900 text-slate-400 hover:text-blue-400 hover:bg-slate-800 transition-colors"
-                aria-label="LinkedIn Profile"
-              >
-                <LinkedinIcon className="w-4 h-4" />
-              </a>
-              <a
-                href={settings.social_links?.twitter || '#'}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2 rounded-lg bg-slate-900 text-slate-400 hover:text-sky-400 hover:bg-slate-800 transition-colors"
-                aria-label="Twitter Profile"
-              >
-                <TwitterIcon className="w-4 h-4" />
-              </a>
+              {Boolean(settings.whatsapp?.trim()) && (
+                <a
+                  href={`https://wa.me/${settings.whatsapp.replace(/[^0-9]/g, '')}?text=Hello%20Luminosoft`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 rounded-lg bg-slate-900 text-slate-400 hover:text-emerald-400 hover:bg-slate-800 transition-colors"
+                  aria-label="WhatsApp Contact"
+                >
+                  <MessageSquare className="w-4 h-4" />
+                </a>
+              )}
+              {Boolean(settings.social_links?.linkedin?.trim()) && (
+                <a
+                  href={settings.social_links!.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 rounded-lg bg-slate-900 text-slate-400 hover:text-blue-400 hover:bg-slate-800 transition-colors"
+                  aria-label="LinkedIn Profile"
+                >
+                  <LinkedinIcon className="w-4 h-4" />
+                </a>
+              )}
+              {Boolean(settings.social_links?.twitter?.trim()) && (
+                <a
+                  href={settings.social_links!.twitter}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 rounded-lg bg-slate-900 text-slate-400 hover:text-sky-400 hover:bg-slate-800 transition-colors"
+                  aria-label="Twitter Profile"
+                >
+                  <TwitterIcon className="w-4 h-4" />
+                </a>
+              )}
+              {Boolean(settings.social_links?.instagram?.trim()) && (
+                <a
+                  href={settings.social_links!.instagram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 rounded-lg bg-slate-900 text-slate-400 hover:text-pink-400 hover:bg-slate-800 transition-colors"
+                  aria-label="Instagram Profile"
+                >
+                  <InstagramIcon className="w-4 h-4" />
+                </a>
+              )}
+              {Boolean(settings.social_links?.youtube?.trim() || settings.youtube_channel_url?.trim()) && (
+                <a
+                  href={settings.social_links?.youtube?.trim() ? settings.social_links.youtube : settings.youtube_channel_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 rounded-lg bg-slate-900 text-slate-400 hover:text-rose-500 hover:bg-slate-800 transition-colors"
+                  aria-label="YouTube Channel"
+                >
+                  <YoutubeIcon className="w-4 h-4" />
+                </a>
+              )}
             </div>
           </div>
 

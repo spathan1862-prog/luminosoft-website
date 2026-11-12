@@ -39,8 +39,8 @@ jobs:
 
       - name: Build Vite Production Assets
         env:
-          VITE_SUPABASE_URL: https://vrcpceurhinjzgiseuow.supabase.co
-          VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_gOFWT4dmdrkBIaduTtklKw_5TzPOia1
+          VITE_SUPABASE_URL: https://pixvgshevennznzgdwro.supabase.co
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_pixvgshevennznzgdwro_placeholder' }}
           VITE_APP_NAME: Luminosoft
           VITE_APP_URL: https://luminosoft.in
         run: |

@@ -61,8 +61,8 @@ npm install
 ### 2. Configure Environment
 Copy `.env.example` to `.env` (already configured for Luminosoft):
 ```env
-VITE_SUPABASE_URL=https://vrcpceurhinjzgiseuow.supabase.co
-VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_gOFWT4dmdrkBIaduTtklKw_5TzPOia1
+VITE_SUPABASE_URL=https://pixvgshevennznzgdwro.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=your_supabase_publishable_key_here
 VITE_APP_NAME=Luminosoft
 VITE_APP_URL=https://luminosoft.in
 ```
@@ -83,11 +83,11 @@ npm run preview
 ## 🗄️ Supabase Database Setup
 
 The complete SQL schema, RLS security policies, triggers, and seed data are located in:
+- `supabase/schema_pixvgshevennznzgdwro.sql`
 - `supabase/schema.sql`
-- `supabase/migrations/20261112_luminosoft_schema.sql`
 
 To apply this schema:
-1. Open your [Supabase Dashboard](https://supabase.com/dashboard/project/vrcpceurhinjzgiseuow).
+1. Open your [Supabase Dashboard](https://supabase.com/dashboard/project/pixvgshevennznzgdwro).
 2. Go to the **SQL Editor** tab.
 3. Paste the contents of `supabase/schema.sql` and click **Run**.
 4. All 10 tables, storage buckets, and RLS policies will be created automatically.

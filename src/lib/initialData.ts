@@ -185,8 +185,8 @@ export const INITIAL_APPLICATIONS: Application[] = [
         application_id: '0e00c13a-2594-4e13-8ba2-72f2e6a6054c',
         platform: 'android',
         platform_name: 'Android APK (Direct Download)',
-        download_url: 'https://vrcpceurhinjzgiseuow.supabase.co/storage/v1/object/public/apps/releases/1793609770051_app-debug.apk',
-        direct_asset_url: 'https://vrcpceurhinjzgiseuow.supabase.co/storage/v1/object/public/apps/releases/1793609770051_app-debug.apk',
+        download_url: 'https://pixvgshevennznzgdwro.supabase.co/storage/v1/object/public/apps/releases/1793609770051_app-debug.apk',
+        direct_asset_url: 'https://pixvgshevennznzgdwro.supabase.co/storage/v1/object/public/apps/releases/1793609770051_app-debug.apk',
         is_github_release: false,
         file_name: 'Hotel-Management-Mobile.apk',
         file_size: '10.2 MB',
@@ -315,8 +315,8 @@ export const INITIAL_APPLICATIONS: Application[] = [
         application_id: 'fbf7e334-37c0-4655-9c9d-5598f890dcf2',
         platform: 'android',
         platform_name: 'Android APK (Direct Download)',
-        download_url: 'https://vrcpceurhinjzgiseuow.supabase.co/storage/v1/object/public/apps/releases/1793259854116_app-debug.apk',
-        direct_asset_url: 'https://vrcpceurhinjzgiseuow.supabase.co/storage/v1/object/public/apps/releases/1793259854116_app-debug.apk',
+        download_url: 'https://pixvgshevennznzgdwro.supabase.co/storage/v1/object/public/apps/releases/1793259854116_app-debug.apk',
+        direct_asset_url: 'https://pixvgshevennznzgdwro.supabase.co/storage/v1/object/public/apps/releases/1793259854116_app-debug.apk',
         is_github_release: false,
         file_name: 'Bubble-Shooter.apk',
         file_size: '12.8 MB',
@@ -337,7 +337,7 @@ export const INITIAL_APPLICATIONS: Application[] = [
           'Aim assist guideline',
           'Score leaderboard and star ratings'
         ],
-        download_url: 'https://vrcpceurhinjzgiseuow.supabase.co/storage/v1/object/public/apps/releases/1793259854116_app-debug.apk',
+        download_url: 'https://pixvgshevennznzgdwro.supabase.co/storage/v1/object/public/apps/releases/1793259854116_app-debug.apk',
         platform: 'android',
       }
     ]
@@ -377,8 +377,8 @@ export const INITIAL_APPLICATIONS: Application[] = [
         application_id: '4871fb69-6044-41d2-a320-e05ab0c65220',
         platform: 'android',
         platform_name: 'Android APK (Direct Download)',
-        download_url: 'https://vrcpceurhinjzgiseuow.supabase.co/storage/v1/object/public/apps/releases/1793259919178_app-debug.apk',
-        direct_asset_url: 'https://vrcpceurhinjzgiseuow.supabase.co/storage/v1/object/public/apps/releases/1793259919178_app-debug.apk',
+        download_url: 'https://pixvgshevennznzgdwro.supabase.co/storage/v1/object/public/apps/releases/1793259919178_app-debug.apk',
+        direct_asset_url: 'https://pixvgshevennznzgdwro.supabase.co/storage/v1/object/public/apps/releases/1793259919178_app-debug.apk',
         is_github_release: false,
         file_name: 'Color-Block-Puzzle.apk',
         file_size: '9.3 MB',
@@ -399,7 +399,7 @@ export const INITIAL_APPLICATIONS: Application[] = [
           'Combo streak multipliers',
           'Haptic feedback support'
         ],
-        download_url: 'https://vrcpceurhinjzgiseuow.supabase.co/storage/v1/object/public/apps/releases/1793259919178_app-debug.apk',
+        download_url: 'https://pixvgshevennznzgdwro.supabase.co/storage/v1/object/public/apps/releases/1793259919178_app-debug.apk',
         platform: 'android',
       }
     ]

@@ -313,11 +313,13 @@ export const AdminEnquiriesPage: React.FC = () => {
                             )}
                             <div>
                               <div className="font-bold text-slate-900">{enq.customer_name}</div>
-                              {enq.business_name && (
-                                <div className="text-[11px] text-slate-500 flex items-center gap-1">
+                              {(enq.business_name || enq.organization) ? (
+                                <div className="text-[11px] text-slate-600 flex items-center gap-1 font-medium">
                                   <Building className="w-3 h-3 text-slate-400" />
-                                  <span>{enq.business_name}</span>
+                                  <span>{enq.business_name || enq.organization}</span>
                                 </div>
+                              ) : (
+                                <div className="text-[10px] text-slate-400 italic">Personal Client</div>
                               )}
                             </div>
                           </div>
@@ -576,7 +578,7 @@ export const AdminEnquiriesPage: React.FC = () => {
                   Project Description &amp; Scope
                 </span>
                 <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 whitespace-pre-line leading-relaxed">
-                  {selectedEnquiry.project_description}
+                  {selectedEnquiry.project_description || 'No additional project description provided.'}
                 </div>
               </div>
 

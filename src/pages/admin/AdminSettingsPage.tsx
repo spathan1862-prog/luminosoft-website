@@ -186,7 +186,7 @@ export const AdminSettingsPage: React.FC = () => {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
                   GitHub Profile URL
@@ -235,6 +235,43 @@ export const AdminSettingsPage: React.FC = () => {
                     setFormData({
                       ...formData,
                       social_links: { ...formData.social_links, twitter: e.target.value },
+                    })
+                  }
+                  className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 font-mono"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Instagram Profile URL
+                </label>
+                <input
+                  type="url"
+                  placeholder="https://instagram.com/..."
+                  value={formData.social_links?.instagram || ''}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      social_links: { ...formData.social_links, instagram: e.target.value },
+                    })
+                  }
+                  className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 font-mono"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  YouTube Channel URL
+                </label>
+                <input
+                  type="url"
+                  placeholder="https://youtube.com/@..."
+                  value={formData.social_links?.youtube || formData.youtube_channel_url || ''}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      youtube_channel_url: e.target.value,
+                      social_links: { ...formData.social_links, youtube: e.target.value },
                     })
                   }
                   className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 font-mono"

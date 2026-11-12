@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { PageLayout } from '../components/layout/PageLayout';
 import { AppCard } from '../components/apps/AppCard';
-import { fetchApplications } from '../lib/api';
-import { Application } from '../types';
+import { fetchApplications, fetchApplicationCategories } from '../lib/api';
+import { Application, ApplicationCategory } from '../types';
 import { INITIAL_APP_CATEGORIES } from '../lib/initialData';
 import { 
   Grid, 
@@ -17,6 +17,7 @@ import {
 
 export const AppsMarketplacePage: React.FC = () => {
   const [apps, setApps] = useState<Application[]>([]);
+  const [categories, setCategories] = useState<ApplicationCategory[]>(INITIAL_APP_CATEGORIES);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -25,8 +26,26 @@ export const AppsMarketplacePage: React.FC = () => {
   useEffect(() => {
     async function load() {
       try {
-        const data = await fetchApplications();
-        setApps(data.filter((a) => a.is_published));
+        const [appsData, catsData] = await Promise.all([
+          fetchApplications(),
+          fetchApplicationCategories(),
+        ]);
+        setApps(appsData.filter((a) => a.is_published));
+
+        // Merge Supabase categories with any unique categories from applications
+        const knownCatNames = new Set(catsData.map(c => c.name.toLowerCase()));
+        const extraCats: ApplicationCategory[] = [];
+        appsData.forEach(a => {
+          if (a.category && !knownCatNames.has(a.category.toLowerCase())) {
+            knownCatNames.add(a.category.toLowerCase());
+            extraCats.push({
+              id: a.category.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+              name: a.category,
+              sort_order: 99
+            });
+          }
+        });
+        setCategories([...catsData, ...extraCats]);
       } catch (err) {
         console.warn('Apps fetch error:', err);
       } finally {
@@ -38,13 +57,14 @@ export const AppsMarketplacePage: React.FC = () => {
 
   const filteredApps = apps
     .filter((app) => {
+      const appCatClean = (app.category || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+      const selectedCatClean = selectedCategory.toLowerCase().replace(/[^a-z0-9]/g, '');
+
       const matchesCategory =
         selectedCategory === 'all' ||
+        appCatClean === selectedCatClean ||
         app.category.toLowerCase().includes(selectedCategory.replace(/-/g, ' ').toLowerCase()) ||
-        (selectedCategory === 'business-software' && app.category === 'Business Software') ||
-        (selectedCategory === 'hotel-management' && app.category === 'Hotel Management') ||
-        (selectedCategory === 'medical-management' && app.category === 'Medical Management') ||
-        (selectedCategory === 'games' && app.category === 'Games');
+        selectedCategory.replace(/-/g, ' ').toLowerCase().includes(app.category.toLowerCase());
 
       const matchesSearch =
         app.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -85,7 +105,7 @@ export const AppsMarketplacePage: React.FC = () => {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             {/* Category pills */}
             <div className="flex items-center gap-1.5 overflow-x-auto pb-2 md:pb-0 scrollbar-none">
-              {INITIAL_APP_CATEGORIES.map((cat) => {
+              {categories.map((cat) => {
                 const isActive = selectedCategory === cat.id;
                 return (
                   <button

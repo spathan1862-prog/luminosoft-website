@@ -1,14 +1,16 @@
 import { createClient } from '@supabase/supabase-js';
 
 // Read Vite environment variables
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://vrcpceurhinjzgiseuow.supabase.co';
-const supabasePublishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_gOFWT4dmdrkBIaduTtklKw_5TzPOia1';
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://pixvgshevennznzgdwro.supabase.co';
+const supabasePublishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || '';
 
 export const isSupabaseConfigured = Boolean(
   supabaseUrl &&
   supabasePublishableKey &&
   supabaseUrl !== 'YOUR_SUPABASE_URL' &&
-  supabasePublishableKey !== 'your_supabase_publishable_anon_key_here'
+  supabasePublishableKey !== 'your_supabase_publishable_anon_key_here' &&
+  supabasePublishableKey !== 'sb_publishable_pixvgshevennznzgdwro_placeholder' &&
+  supabasePublishableKey.startsWith('sb_publishable_')
 );
 
 // Clear any obsolete localStorage tokens to enforce tab-scoped session policy

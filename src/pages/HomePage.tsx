@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { PageLayout } from '../components/layout/PageLayout';
 import { ProjectCard } from '../components/projects/ProjectCard';
-import { AppCard } from '../components/apps/AppCard';
 import { WebsiteEnquiryForm } from '../components/enquiry/WebsiteEnquiryForm';
 import { 
   fetchWebProjects, 
@@ -190,13 +189,13 @@ export const HomePage: React.FC = () => {
           {/* 5. Main Navigation / 3 CTA Actions */}
           <div className="reveal-init delay-375 mt-8 sm:mt-9 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
             {/* CTA 1: Explore Our Applications */}
-            <a
-              href="#applications"
+            <Link
+              to="/apps"
               className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-all shadow-sm hover:shadow-md cursor-pointer"
             >
               <span>Explore Our Applications</span>
               <Smartphone className="w-4 h-4" />
-            </a>
+            </Link>
 
             {/* CTA 2: Get a Website for Your Business */}
             <a
@@ -357,53 +356,82 @@ export const HomePage: React.FC = () => {
 
 
       {/* =====================================================================
-          3. OUR APPLICATIONS (Marketplace Preview - No direct download on cards)
+          3. OUR APPLICATIONS (Marketplace Hub)
           ===================================================================== */}
       <section id="applications" className="py-20 sm:py-24 bg-white border-b border-slate-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="reveal-init flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
-            <div className="space-y-2">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-blue-50 text-blue-700 text-xs font-semibold">
+          <div className="relative rounded-3xl bg-gradient-to-br from-slate-900 via-slate-950 to-blue-950 text-white p-8 sm:p-12 lg:p-16 overflow-hidden shadow-card border border-slate-800">
+            {/* Ambient background glow accents */}
+            <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 bg-blue-600/15 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
+
+            <div className="relative z-10 max-w-3xl mx-auto text-center space-y-6">
+              {/* Badge */}
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-500/10 border border-blue-400/20 text-blue-400 text-xs font-semibold shadow-xs">
                 <Smartphone className="w-3.5 h-3.5" />
-                <span>Software Products</span>
+                <span>Software Products &amp; Applications</span>
               </div>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+
+              {/* Section Heading */}
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white leading-tight">
                 Our Applications
               </h2>
-              <p className="text-xs sm:text-sm text-slate-600 max-w-xl">
-                Ready-to-use software products built by Luminosoft for businesses, hospitality, healthcare, and productivity. Click any application to view download options and installation guides.
+
+              {/* Subtitle / Description */}
+              <p className="text-sm sm:text-base md:text-lg text-slate-300 max-w-2xl mx-auto leading-relaxed">
+                Discover verified enterprise desktop software, clinic management systems, hospitality portals, and mobile games engineered by Luminosoft. Fast, lightweight, offline-ready, with regular updates.
               </p>
-            </div>
 
-            <Link
-              to="/apps"
-              className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-blue-600 hover:text-blue-700 shrink-0"
-            >
-              <span>Explore All Applications ({apps.length})</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-
-          {/* App Cards Grid with Staggered Scroll Reveal */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {apps.slice(0, 4).map((app, index) => (
-              <div 
-                key={app.id} 
-                className={`reveal-init delay-${(index + 1) * 75}`}
-              >
-                <AppCard app={app} />
+              {/* Category Pills / Capability Highlights */}
+              <div className="pt-2 flex flex-wrap items-center justify-center gap-2.5 text-xs">
+                <span className="px-3.5 py-1.5 rounded-xl bg-slate-800/80 border border-slate-700/80 text-slate-300 font-medium flex items-center gap-2 shadow-2xs">
+                  <Building2 className="w-3.5 h-3.5 text-blue-400" />
+                  <span>Hotel &amp; Property Management</span>
+                </span>
+                <span className="px-3.5 py-1.5 rounded-xl bg-slate-800/80 border border-slate-700/80 text-slate-300 font-medium flex items-center gap-2 shadow-2xs">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Clinic &amp; Healthcare Systems</span>
+                </span>
+                <span className="px-3.5 py-1.5 rounded-xl bg-slate-800/80 border border-slate-700/80 text-slate-300 font-medium flex items-center gap-2 shadow-2xs">
+                  <Monitor className="w-3.5 h-3.5 text-sky-400" />
+                  <span>Windows Desktop Installers</span>
+                </span>
+                <span className="px-3.5 py-1.5 rounded-xl bg-slate-800/80 border border-slate-700/80 text-slate-300 font-medium flex items-center gap-2 shadow-2xs">
+                  <Smartphone className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Android Native APKs</span>
+                </span>
               </div>
-            ))}
-          </div>
 
-          <div className="reveal-init delay-300 mt-10 text-center">
-            <Link
-              to="/apps"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-xs font-semibold text-slate-800 bg-slate-100 hover:bg-slate-200 transition-colors shadow-2xs"
-            >
-              <span>Browse Full Application Marketplace</span>
-              <ChevronRight className="w-4 h-4 text-slate-600" />
-            </Link>
+              {/* ONE LARGE, ATTRACTIVE AND RESPONSIVE "Explore All Applications" BUTTON */}
+              <div className="pt-4 sm:pt-6">
+                <Link
+                  to="/apps"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 sm:px-12 py-4 sm:py-5 rounded-2xl text-base sm:text-lg font-bold text-white bg-blue-600 hover:bg-blue-500 active:scale-[0.99] transition-all shadow-xl hover:shadow-blue-500/25 hover:-translate-y-0.5 group cursor-pointer"
+                >
+                  <Smartphone className="w-5 h-5 text-blue-200 group-hover:text-white transition-colors" />
+                  <span>Explore All Applications</span>
+                  <ArrowRight className="w-5 h-5 text-blue-200 group-hover:translate-x-1 group-hover:text-white transition-all" />
+                </Link>
+              </div>
+
+              {/* Trust Points */}
+              <div className="pt-2 flex flex-wrap items-center justify-center gap-3 sm:gap-6 text-xs text-slate-400">
+                <span className="flex items-center gap-1.5">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                  <span>Verified &amp; Safe Downloads</span>
+                </span>
+                <span className="hidden sm:inline text-slate-700">•</span>
+                <span className="flex items-center gap-1.5">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                  <span>100% Offline-Capable</span>
+                </span>
+                <span className="hidden sm:inline text-slate-700">•</span>
+                <span className="flex items-center gap-1.5">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                  <span>Installation Guides &amp; Video Tutorials</span>
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </section>
