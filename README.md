@@ -96,9 +96,9 @@ To apply this schema:
 
 ## 🔐 Admin Authentication Credentials
 
-- **Admin Login Route:** `/admin/login`
-- **Authorized Emails:** `spathan1862@gmail.com` or `admin@luminosoft.in`
-- **Default Sandbox Password:** `Luminosoft@2026`
+- **Admin Login Route:** `
+- **Authorized Emails:** `
+- **Default Sandbox Password:** 
 
 ---
 
