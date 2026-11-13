@@ -37,10 +37,17 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
+      - name: Validate Required Secrets
+        run: |
+          if [ -z "${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}" ]; then
+            echo "::error::Required secret VITE_SUPABASE_PUBLISHABLE_KEY is missing in GitHub Repository Secrets! Please add it in Settings -> Secrets and variables -> Actions."
+            exit 1
+          fi
+
       - name: Build Vite Production Assets
         env:
           VITE_SUPABASE_URL: https://pixvgshevennznzgdwro.supabase.co
-          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_pixvgshevennznzgdwro_placeholder' }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
           VITE_APP_NAME: Luminosoft
           VITE_APP_URL: https://luminosoft.in
         run: |

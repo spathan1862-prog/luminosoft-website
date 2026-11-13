@@ -109,7 +109,7 @@ export const AdminLoginPage: React.FC = () => {
                     type="email"
                     required
                     autoComplete="username"
-                    placeholder="spathan2604@gmail.com"
+                    placeholder="Enter your email ID"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full pl-10 pr-3 py-2.5 text-sm rounded-xl bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"

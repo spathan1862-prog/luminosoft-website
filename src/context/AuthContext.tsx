@@ -153,6 +153,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return { success: true };
     }
 
+    if (!supabase) {
+      return { 
+        success: false, 
+        error: 'Database connection is not configured on this build. Please ensure VITE_SUPABASE_PUBLISHABLE_KEY is set in GitHub Secrets.' 
+      };
+    }
+
     return { 
       success: false, 
       error: 'Invalid admin credentials. Please enter a valid registered email and password.' 
