@@ -34,7 +34,7 @@ export const AppsMarketplacePage: React.FC = () => {
         ]);
         setApps(appsData.filter((a) => a.is_published));
 
-        // Merge Supabase categories with any unique categories from applications
+        // Merge database categories with any unique categories from applications
         const knownCatNames = new Set(catsData.map(c => c.name.toLowerCase()));
         const extraCats: ApplicationCategory[] = [];
         appsData.forEach(a => {

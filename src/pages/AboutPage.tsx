@@ -193,7 +193,7 @@ export const AboutPage: React.FC = () => {
               </div>
               <h4 className="text-base font-bold text-slate-900">Cloud Databases &amp; CMS</h4>
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                Scalable PostgreSQL backends with Supabase, dynamic administrative content management systems, and automated real-time backups.
+                Scalable enterprise PostgreSQL backends, dynamic administrative content management systems, and automated real-time backups.
               </p>
             </div>
           </div>

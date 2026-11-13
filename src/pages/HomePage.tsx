@@ -260,7 +260,7 @@ export const HomePage: React.FC = () => {
               </div>
               <div>
                 <div className="text-xs font-bold text-slate-900">Cloud &amp; Database</div>
-                <div className="text-[11px] text-slate-500">Supabase &amp; PostgreSQL</div>
+                <div className="text-[11px] text-slate-500">Cloud &amp; PostgreSQL</div>
               </div>
             </div>
 
@@ -701,7 +701,7 @@ export const HomePage: React.FC = () => {
               </p>
               
               <p className="text-sm text-slate-400 leading-relaxed">
-                Founded by Samir Pathan, Luminosoft combines modern frontend architectures (React 19, TypeScript) with robust cloud backends (Supabase, PostgreSQL). We specialize in crafting fast customer-facing websites, custom CRM portals, and multi-platform applications that empower organizations to automate workflows and accelerate digital growth.
+                Founded by Samir Pathan, Luminosoft combines modern frontend architectures (React 19, TypeScript) with robust cloud backends (PostgreSQL, Cloud APIs). We specialize in crafting fast customer-facing websites, custom CRM portals, and multi-platform applications that empower organizations to automate workflows and accelerate digital growth.
               </p>
 
               <div className="space-y-3 pt-2">
@@ -764,7 +764,7 @@ export const HomePage: React.FC = () => {
                   </div>
                   <h4 className="text-sm font-bold text-white">Cloud Database</h4>
                   <p className="text-xs text-slate-400 leading-relaxed">
-                    Supabase PostgreSQL data storage with Row Level Security, instant queries, and scalable storage.
+                    Enterprise PostgreSQL data storage with Row Level Security, instant queries, and scalable storage.
                   </p>
                 </div>
               </div>

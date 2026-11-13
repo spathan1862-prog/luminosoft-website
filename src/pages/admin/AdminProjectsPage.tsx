@@ -62,7 +62,7 @@ export const AdminProjectsPage: React.FC = () => {
       short_description: '',
       detailed_description: '',
       features: [],
-      technologies: ['React', 'TypeScript', 'Tailwind CSS', 'Supabase'],
+      technologies: ['React', 'TypeScript', 'Tailwind CSS', 'Cloud Architecture'],
       link: 'https://',
       status: 'Live & Active',
       is_featured: false,

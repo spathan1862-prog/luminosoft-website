@@ -72,7 +72,7 @@ export const INITIAL_PROJECTS: WebProject[] = [
       'Instant one-tap WhatsApp direct contact & click-to-call integration',
       'Performance-tuned frontend achieving 95+ Google Lighthouse scores'
     ],
-    technologies: ['React', 'TypeScript', 'Tailwind CSS', 'Supabase', 'PostgreSQL', 'Vite'],
+    technologies: ['React', 'TypeScript', 'Tailwind CSS', 'Cloud Database', 'PostgreSQL', 'Vite'],
     link: 'https://khaneletrics.in',
     status: 'Live & Active',
     is_featured: true,
@@ -99,7 +99,7 @@ export const INITIAL_PROJECTS: WebProject[] = [
       'Cloud sync between desktop software and mobile web portal',
       'HIPAA-compliant encrypted data architecture'
     ],
-    technologies: ['React', 'TypeScript', 'Tailwind CSS', 'PostgreSQL', 'Supabase'],
+    technologies: ['React', 'TypeScript', 'Tailwind CSS', 'PostgreSQL', 'Cloud Architecture'],
     link: '#',
     status: 'Live & Active',
     is_featured: true,
@@ -126,7 +126,7 @@ export const INITIAL_PROJECTS: WebProject[] = [
       'Automated confirmation email and WhatsApp invoice dispatch',
       'Mobile-first booking engine with zero booking commission fees'
     ],
-    technologies: ['React', 'TypeScript', 'Tailwind CSS', 'Supabase'],
+    technologies: ['React', 'TypeScript', 'Tailwind CSS', 'Cloud Architecture'],
     link: '#',
     status: 'Live & Active',
     is_featured: false,

@@ -80,7 +80,7 @@ export async function fetchWebProjects(): Promise<WebProject[]> {
         'Custom admin content management',
         'Fast cloud hosting and database synchronization'
       ],
-      technologies: Array.isArray(item.technologies) ? item.technologies : ['React', 'TypeScript', 'Tailwind CSS', 'Supabase'],
+      technologies: Array.isArray(item.technologies) ? item.technologies : ['React', 'TypeScript', 'Tailwind CSS', 'Cloud Architecture'],
       link: item.link || (item.slug === 'khan-electrics' ? 'https://khaneletrics.in' : '#'),
       github_url: item.github_url || undefined,
       completion_date: item.completion_date || item.created_at?.slice(0, 10),

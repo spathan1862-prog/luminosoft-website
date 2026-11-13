@@ -102,7 +102,7 @@ export const ProjectsPage: React.FC = () => {
                   Khan Electrics – Multi-Service Electrical Portal
                 </h3>
                 <p className="text-xs text-slate-600 max-w-xl">
-                  Official multi-service portal with online service booking, electrical goods catalog, and Admin CMS. Managed dynamically via Supabase.
+                  Official multi-service portal with online service booking, electrical goods catalog, and Admin CMS. Managed dynamically via Cloud Database.
                 </p>
               </div>
             </div>

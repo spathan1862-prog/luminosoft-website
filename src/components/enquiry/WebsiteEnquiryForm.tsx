@@ -179,7 +179,7 @@ export const WebsiteEnquiryForm: React.FC<WebsiteEnquiryFormProps> = ({
         <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 max-w-sm mx-auto text-xs text-slate-700 space-y-1.5 font-mono">
           <div className="text-[11px] text-slate-400 uppercase tracking-wider">Enquiry Reference ID</div>
           <div className="font-bold text-slate-900 text-base">{submittedId}</div>
-          <div className="text-[11px] text-emerald-600 font-sans font-medium">✓ Logged in Supabase Database</div>
+          <div className="text-[11px] text-emerald-600 font-sans font-medium">✓ Saved Securely to Database</div>
         </div>
 
         <div className="pt-2">

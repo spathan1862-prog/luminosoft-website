@@ -60,7 +60,7 @@ export const PrivacyPolicyPage: React.FC = () => {
 
             <h2 className="text-lg font-bold text-slate-900 pt-2">3. Database Security &amp; Storage</h2>
             <p>
-              All submitted data is stored in our secure PostgreSQL database managed through Supabase with Row Level Security (RLS) policies. Only authenticated administrators have authorization to access customer inquiries. We never sell, rent, or trade your personal details to third-party marketing companies.
+              All submitted data is stored in our secure PostgreSQL database managed with strict Row Level Security (RLS) policies. Only authenticated administrators have authorization to access customer inquiries. We never sell, rent, or trade your personal details to third-party marketing companies.
             </p>
 
             <h2 className="text-lg font-bold text-slate-900 pt-2">4. Software Applications Privacy</h2>
