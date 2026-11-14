@@ -249,7 +249,7 @@ export const WebsiteEnquiryForm: React.FC<WebsiteEnquiryFormProps> = ({
             <input
               type="text"
               required
-              placeholder="e.g. Samir Pathan"
+              placeholder="e.g. Samir Khan"
               value={formData.customer_name}
               onChange={(e) => {
                 setFormData({ ...formData, customer_name: e.target.value });
@@ -277,7 +277,7 @@ export const WebsiteEnquiryForm: React.FC<WebsiteEnquiryFormProps> = ({
             <input
               type="tel"
               required
-              placeholder="e.g. 98765 43210"
+              placeholder="Enter 10-digit mobile number"
               value={formData.mobile_number}
               onChange={(e) => {
                 setFormData({ ...formData, mobile_number: e.target.value });
@@ -305,7 +305,7 @@ export const WebsiteEnquiryForm: React.FC<WebsiteEnquiryFormProps> = ({
             <input
               type="email"
               required
-              placeholder="e.g. contact@yourbusiness.com"
+              placeholder="####@gmail.com"
               value={formData.email}
               onChange={(e) => {
                 setFormData({ ...formData, email: e.target.value });
@@ -332,7 +332,7 @@ export const WebsiteEnquiryForm: React.FC<WebsiteEnquiryFormProps> = ({
           <div className="relative">
             <input
               type="text"
-              placeholder="e.g. Khan Electrics / ABC Store"
+              placeholder="e.g. ABS Store / Your Need For"
               value={formData.business_name}
               onChange={(e) => setFormData({ ...formData, business_name: e.target.value })}
               className="w-full pl-9 pr-3 py-2.5 text-xs rounded-xl border border-slate-300 bg-white focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600"
@@ -350,7 +350,7 @@ export const WebsiteEnquiryForm: React.FC<WebsiteEnquiryFormProps> = ({
         <div className="relative">
           <input
             type="text"
-            placeholder="e.g. ₹25,000, ₹50,000–₹1,00,000, or Flexible"
+            placeholder="20000/ 30000 /50000 Or Flexible ."
             value={formData.budget}
             onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
             className="w-full pl-9 pr-3 py-2.5 text-xs rounded-xl border border-slate-300 bg-white focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600"
