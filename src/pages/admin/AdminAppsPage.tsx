@@ -46,6 +46,8 @@ export const AdminAppsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   // App Modal
   const [isAppModalOpen, setIsAppModalOpen] = useState(false);
@@ -141,18 +143,51 @@ export const AdminAppsPage: React.FC = () => {
   };
 
   const handleDeleteApp = async (id: string, name: string) => {
-    if (window.confirm(`Are you sure you want to delete application "${name}"?`)) {
-      await deleteApplication(id);
-      await loadApps();
+    if (!window.confirm(`Are you sure you want to permanently delete application "${name}"? This action cannot be undone.`)) {
+      return;
+    }
+    setDeletingId(id);
+    setToastMessage(null);
+    try {
+      const result = await deleteApplication(id);
+      if (result.success) {
+        setToastMessage({ type: 'success', text: `Application "${name}" was permanently deleted.` });
+        await loadApps();
+      } else {
+        setToastMessage({ type: 'error', text: `Failed to delete application "${name}": ${result.error || 'Unknown error'}` });
+      }
+    } catch (err: any) {
+      setToastMessage({ type: 'error', text: `Failed to delete application "${name}": ${err?.message || 'Unknown error'}` });
+    } finally {
+      setDeletingId(null);
     }
   };
 
   const handleTogglePublish = async (app: Application) => {
-    await saveApplication({
-      ...app,
-      is_published: !app.is_published,
-    });
-    await loadApps();
+    setToastMessage(null);
+    try {
+      const result = await saveApplication({
+        ...app,
+        is_published: !app.is_published,
+      });
+      if (result.success) {
+        setToastMessage({
+          type: 'success',
+          text: `Application "${app.name}" is now ${!app.is_published ? 'Live (Published)' : 'Draft (Unpublished)'}.`,
+        });
+        await loadApps();
+      } else {
+        setToastMessage({
+          type: 'error',
+          text: `Failed to update status for "${app.name}": ${result.error || 'Unknown error'}`,
+        });
+      }
+    } catch (err: any) {
+      setToastMessage({
+        type: 'error',
+        text: `Failed to update status: ${err?.message || 'Unknown error'}`,
+      });
+    }
   };
 
   const handleAddFeature = () => {
@@ -309,11 +344,25 @@ export const AdminAppsPage: React.FC = () => {
     }
 
     setSavingApp(true);
-    await saveApplication(editingApp);
-    setSavingApp(false);
-    setIsAppModalOpen(false);
-    setEditingApp(null);
-    await loadApps();
+    setToastMessage(null);
+    try {
+      const result = await saveApplication(editingApp);
+      setSavingApp(false);
+      if (!result.success) {
+        alert(`Failed to save application: ${result.error || 'Unknown error'}`);
+        return;
+      }
+      setToastMessage({
+        type: 'success',
+        text: `Application "${editingApp.name}" was saved and published successfully!`,
+      });
+      setIsAppModalOpen(false);
+      setEditingApp(null);
+      await loadApps();
+    } catch (err: any) {
+      setSavingApp(false);
+      alert(`Unexpected error saving application: ${err?.message || 'Unknown error'}`);
+    }
   };
 
   // Open Update Modal
@@ -332,6 +381,7 @@ export const AdminAppsPage: React.FC = () => {
     if (!targetAppForUpdate || !newVersion.trim()) return;
 
     setSavingUpdate(true);
+    setToastMessage(null);
     const newFeatures = newFeaturesInput
       .split('\n')
       .map((s) => s.trim())
@@ -341,20 +391,34 @@ export const AdminAppsPage: React.FC = () => {
       .map((s) => s.trim())
       .filter(Boolean);
 
-    await addApplicationUpdate({
-      application_id: targetAppForUpdate.id,
-      version: newVersion.trim(),
-      release_date: new Date().toISOString().slice(0, 10),
-      whats_new: whatsNew.trim(),
-      new_features: newFeatures,
-      bug_fixes: bugFixes,
-      download_url: updateDownloadUrl.trim() || undefined,
-    });
+    try {
+      const res = await addApplicationUpdate({
+        application_id: targetAppForUpdate.id,
+        version: newVersion.trim(),
+        release_date: new Date().toISOString().slice(0, 10),
+        whats_new: whatsNew.trim(),
+        new_features: newFeatures,
+        bug_fixes: bugFixes,
+        download_url: updateDownloadUrl.trim() || undefined,
+      });
 
-    setSavingUpdate(false);
-    setIsUpdateModalOpen(false);
-    setTargetAppForUpdate(null);
-    await loadApps();
+      setSavingUpdate(false);
+      if (!res.success) {
+        alert(`Failed to publish update: ${res.error || 'Unknown error'}`);
+        return;
+      }
+
+      setToastMessage({
+        type: 'success',
+        text: `Update v${newVersion.trim()} published for "${targetAppForUpdate.name}".`,
+      });
+      setIsUpdateModalOpen(false);
+      setTargetAppForUpdate(null);
+      await loadApps();
+    } catch (err: any) {
+      setSavingUpdate(false);
+      alert(`Unexpected error publishing update: ${err?.message || 'Unknown error'}`);
+    }
   };
 
   const filteredApps = apps.filter((a) => {
@@ -382,6 +446,33 @@ export const AdminAppsPage: React.FC = () => {
       }
     >
       <div className="space-y-6">
+        {/* Feedback Alert / Toast Banner */}
+        {toastMessage && (
+          <div
+            className={`p-4 rounded-2xl flex items-center justify-between text-xs font-semibold shadow-xs animate-fade-in ${
+              toastMessage.type === 'success'
+                ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                : 'bg-rose-50 text-rose-800 border border-rose-200'
+            }`}
+          >
+            <div className="flex items-center gap-2.5">
+              {toastMessage.type === 'success' ? (
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              ) : (
+                <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+              )}
+              <span>{toastMessage.text}</span>
+            </div>
+            <button
+              onClick={() => setToastMessage(null)}
+              className="p-1 hover:bg-black/5 rounded-lg cursor-pointer transition-colors"
+              title="Dismiss"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+
         {/* Search & Filters */}
         <div className="p-4 bg-white rounded-2xl border border-slate-200/90 shadow-subtle flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="relative w-full sm:w-80">
@@ -525,10 +616,15 @@ export const AdminAppsPage: React.FC = () => {
                         </button>
                         <button
                           onClick={() => handleDeleteApp(app.id, app.name)}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 cursor-pointer"
+                          disabled={deletingId === app.id}
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                           title="Delete App"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          {deletingId === app.id ? (
+                            <Loader2 className="w-4 h-4 animate-spin text-rose-600" />
+                          ) : (
+                            <Trash2 className="w-4 h-4" />
+                          )}
                         </button>
                       </div>
                     </td>

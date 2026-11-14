@@ -3,6 +3,7 @@ import {
   WebProject, 
   Application, 
   ApplicationCategory,
+  ApplicationDownload,
   WebsiteEnquiry, 
   CompanySettings, 
   ApplicationUpdate,
@@ -201,10 +202,63 @@ export async function deleteWebProject(id: string): Promise<{ success: boolean; 
 // 2. APPLICATIONS API
 // ==============================================================================
 
-export async function fetchApplications(): Promise<Application[]> {
-  const localList = getLocal<Application[]>(LS_APPS_KEY, INITIAL_APPLICATIONS);
+export function extractStoragePathFromUrl(urlStr: string): { bucket: string; path: string } | null {
+  if (!urlStr || typeof urlStr !== 'string') return null;
+  const match = urlStr.match(/\/storage\/v1\/object\/public\/([^/]+)\/(.+)$/);
+  if (match) {
+    const bucket = match[1];
+    const path = decodeURIComponent(match[2].split('?')[0]);
+    return { bucket, path };
+  }
+  return null;
+}
 
-  if (!supabase) return localList;
+export async function deleteStorageAssetsForApplication(app: Partial<Application>): Promise<void> {
+  if (!supabase) return;
+
+  const urlsToClean: string[] = [];
+  if (app.icon) urlsToClean.push(app.icon);
+  if (app.logo_url && app.logo_url !== app.icon) urlsToClean.push(app.logo_url);
+  if (Array.isArray(app.screenshots)) urlsToClean.push(...app.screenshots);
+  if (Array.isArray(app.promotional_images)) urlsToClean.push(...app.promotional_images);
+  if (Array.isArray(app.downloads)) {
+    for (const dl of app.downloads) {
+      if (dl.download_url) urlsToClean.push(dl.download_url);
+      if (dl.direct_asset_url && dl.direct_asset_url !== dl.download_url) {
+        urlsToClean.push(dl.direct_asset_url);
+      }
+    }
+  }
+
+  const bucketMap = new Map<string, Set<string>>();
+  for (const u of urlsToClean) {
+    const extracted = extractStoragePathFromUrl(u);
+    if (extracted) {
+      if (!bucketMap.has(extracted.bucket)) {
+        bucketMap.set(extracted.bucket, new Set());
+      }
+      bucketMap.get(extracted.bucket)!.add(extracted.path);
+    }
+  }
+
+  for (const [bucket, pathSet] of bucketMap.entries()) {
+    try {
+      const paths = Array.from(pathSet);
+      if (paths.length > 0) {
+        await supabase.storage.from(bucket).remove(paths);
+      }
+    } catch (e: any) {
+      console.warn(`Storage asset cleanup error in bucket ${bucket}:`, e?.message);
+    }
+  }
+}
+
+export async function fetchApplications(): Promise<Application[]> {
+  const localList = getLocal<Application[]>(LS_APPS_KEY, []);
+
+  if (!supabase) {
+    return localList.length > 0 ? localList : INITIAL_APPLICATIONS;
+  }
 
   try {
     const { data, error } = await supabase
@@ -212,76 +266,95 @@ export async function fetchApplications(): Promise<Application[]> {
       .select('*, downloads:application_downloads(*), updates:application_updates(*)')
       .order('sort_order', { ascending: true });
 
-    if (error || !data || data.length === 0) {
-      return localList;
+    if (error) {
+      console.warn('Failed to load applications from Supabase, using local fallback:', error.message);
+      return localList.length > 0 ? localList : INITIAL_APPLICATIONS;
     }
 
-    const mapped: Application[] = data.map((item: any) => {
-      const initialMatch = INITIAL_APPLICATIONS.find(
-        a => a.id === item.id || a.slug === item.slug || a.name.toLowerCase() === item.name.toLowerCase()
-      );
-
+    // Supabase is the single source of truth when connected
+    const mapped: Application[] = (data || []).map((item: any) => {
       const platforms = Array.isArray(item.supported_platforms) 
         ? item.supported_platforms 
         : (item.platform ? (item.platform === 'all' ? ['windows', 'android'] : [item.platform]) : ['windows']);
 
+      const downloadsList: ApplicationDownload[] = Array.isArray(item.downloads) && item.downloads.length > 0
+        ? item.downloads.map((d: any) => ({
+            id: d.id,
+            application_id: d.application_id || item.id,
+            platform: d.platform || 'windows',
+            platform_name: d.platform_name || (d.platform === 'android' ? 'Android APK' : 'Windows Setup (Installer)'),
+            download_url: d.download_url,
+            direct_asset_url: d.direct_asset_url || d.download_url,
+            is_github_release: Boolean(d.is_github_release || String(d.download_url).includes('github.com')),
+            github_repo: d.github_repo || undefined,
+            file_name: d.file_name || undefined,
+            file_size: d.file_size || (d.file_size_bytes ? `${(d.file_size_bytes / (1024 * 1024)).toFixed(1)} MB` : item.app_size),
+            file_size_bytes: d.file_size_bytes || undefined,
+            version: d.version || item.version || '1.0.0',
+            is_active: d.is_active !== false,
+            created_at: d.created_at,
+          }))
+        : (item.download_url ? [{
+            id: `dl-${item.id}`,
+            application_id: item.id,
+            platform: item.platform === 'android' ? 'android' : 'windows',
+            platform_name: item.platform === 'android' ? 'Android APK' : 'Windows Setup (Installer)',
+            download_url: item.download_url,
+            direct_asset_url: item.download_url,
+            is_github_release: String(item.download_url).includes('github.com'),
+            file_size: item.file_size_bytes ? `${(item.file_size_bytes / (1024 * 1024)).toFixed(1)} MB` : item.app_size,
+            is_active: true,
+          }] : []);
+
+      const updatesList: ApplicationUpdate[] = Array.isArray(item.updates)
+        ? item.updates.map((u: any) => ({
+            id: u.id,
+            application_id: u.application_id || item.id,
+            version: u.version,
+            release_date: u.release_date,
+            whats_new: u.whats_new || '',
+            new_features: Array.isArray(u.new_features) ? u.new_features : [],
+            bug_fixes: Array.isArray(u.bug_fixes) ? u.bug_fixes : [],
+            download_url: u.download_url || undefined,
+            created_at: u.created_at,
+          }))
+        : [];
+
       return {
         id: item.id,
-        slug: item.slug || (item.name ? item.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') : item.id),
+        slug: item.slug || (item.name ? item.name.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-') : item.id),
         name: item.name,
         category: item.category || 'Business Software',
-        icon: item.icon || initialMatch?.icon || 'Grid',
-        logo_url: item.logo_url || initialMatch?.logo_url || item.icon || initialMatch?.icon,
-        short_description: item.short_description || item.description || initialMatch?.short_description || '',
-        full_description: item.full_description || initialMatch?.full_description || item.description || '',
+        icon: item.icon || 'Grid',
+        logo_url: item.logo_url || item.icon || 'Grid',
+        short_description: item.short_description || item.description || '',
+        full_description: item.full_description || item.description || '',
         features: Array.isArray(item.features) && item.features.length > 0 
           ? item.features 
-          : (initialMatch?.features || ['High-speed performance', 'Cross-platform stability', 'Regular updates & bug fixes']),
-        screenshots: Array.isArray(item.screenshots) && item.screenshots.length > 0
-          ? item.screenshots
-          : (initialMatch?.screenshots || []),
+          : ['High-speed performance', 'Cross-platform stability', 'Regular updates & bug fixes'],
+        screenshots: Array.isArray(item.screenshots) ? item.screenshots : [],
         promotional_images: Array.isArray(item.promotional_images) ? item.promotional_images : [],
         supported_platforms: platforms,
-        system_requirements: item.system_requirements || initialMatch?.system_requirements || 'Windows 10/11 or Android 8.0+',
-        app_size: item.app_size || (item.file_size_bytes ? `${(item.file_size_bytes / (1024*1024)).toFixed(1)} MB` : initialMatch?.app_size || '25 MB'),
-        version: item.version || initialMatch?.version || '1.0.0',
-        release_date: item.release_date || item.created_at?.slice(0, 10) || '2026-10-29',
-        download_count: item.download_count || initialMatch?.download_count || 0,
+        system_requirements: item.system_requirements || 'Windows 10/11 or Android 8.0+',
+        app_size: item.app_size || (item.file_size_bytes ? `${(item.file_size_bytes / (1024 * 1024)).toFixed(1)} MB` : '25 MB'),
+        version: item.version || '1.0.0',
+        release_date: item.release_date || item.created_at?.slice(0, 10) || new Date().toISOString().slice(0, 10),
+        download_count: item.download_count || 0,
         is_featured: Boolean(item.is_featured),
         is_published: item.is_published !== false,
         sort_order: item.sort_order || 0,
-        downloads: Array.isArray(item.downloads) && item.downloads.length > 0
-          ? item.downloads
-          : (item.download_url ? [{
-              id: `dl-${item.id}`,
-              application_id: item.id,
-              platform: item.platform === 'android' ? 'android' : 'windows',
-              platform_name: item.platform === 'android' ? 'Android APK' : 'Windows Setup (Installer)',
-              download_url: item.download_url,
-              direct_asset_url: item.download_url,
-              is_github_release: String(item.download_url).includes('github.com'),
-              file_size: item.file_size_bytes ? `${(item.file_size_bytes / (1024*1024)).toFixed(1)} MB` : undefined,
-              is_active: true,
-            }] : initialMatch?.downloads || []),
-        updates: Array.isArray(item.updates) && item.updates.length > 0
-          ? item.updates
-          : (initialMatch?.updates || []),
+        downloads: downloadsList,
+        updates: updatesList,
         created_at: item.created_at,
         updated_at: item.updated_at,
       };
     });
 
-    INITIAL_APPLICATIONS.forEach(initApp => {
-      if (!mapped.some(m => m.slug === initApp.slug || m.name.toLowerCase() === initApp.name.toLowerCase())) {
-        mapped.push(initApp);
-      }
-    });
-
     setLocal(LS_APPS_KEY, mapped);
     return mapped;
-  } catch (err) {
-    console.warn('Failed to load applications from Supabase, using local fallback:', err);
-    return localList;
+  } catch (err: any) {
+    console.warn('Failed to load applications from Supabase, using local fallback:', err?.message);
+    return localList.length > 0 ? localList : INITIAL_APPLICATIONS;
   }
 }
 
@@ -313,21 +386,27 @@ export async function fetchApplicationBySlug(slug: string): Promise<Application 
 
 export async function saveApplication(app: Partial<Application>): Promise<{ success: boolean; data?: Application; error?: string }> {
   const currentList = await fetchApplications();
-  const slug = app.slug || (app.name ? app.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') : `app-${Date.now()}`);
+  const slug = app.slug || (app.name ? app.name.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-') : `app-${Date.now()}`);
+
+  const appId = (app.id && app.id.length >= 32 && !app.id.startsWith('temp-')) 
+    ? app.id 
+    : crypto.randomUUID();
 
   const normalizedApp: Application = {
-    id: app.id || crypto.randomUUID(),
+    id: appId,
     slug,
-    name: app.name || 'Untitled Application',
+    name: (app.name || 'Untitled Application').trim(),
     category: app.category || 'Business Software',
     icon: app.icon || 'Grid',
-    logo_url: app.logo_url || app.icon,
+    logo_url: app.logo_url || app.icon || 'Grid',
     short_description: app.short_description || '',
     full_description: app.full_description || '',
-    features: app.features || [],
-    screenshots: app.screenshots || [],
-    promotional_images: app.promotional_images || [],
-    supported_platforms: app.supported_platforms || ['windows'],
+    features: Array.isArray(app.features) ? app.features : [],
+    screenshots: Array.isArray(app.screenshots) ? app.screenshots : [],
+    promotional_images: Array.isArray(app.promotional_images) ? app.promotional_images : [],
+    supported_platforms: Array.isArray(app.supported_platforms) && app.supported_platforms.length > 0 
+      ? app.supported_platforms 
+      : ['windows'],
     system_requirements: app.system_requirements || 'Windows 10/11 or Android 8+',
     app_size: app.app_size || '50 MB',
     version: app.version || '1.0.0',
@@ -336,14 +415,16 @@ export async function saveApplication(app: Partial<Application>): Promise<{ succ
     is_featured: Boolean(app.is_featured),
     is_published: app.is_published !== false,
     sort_order: app.sort_order ?? (currentList.length + 1),
-    downloads: app.downloads || [],
-    updates: app.updates || [],
+    downloads: Array.isArray(app.downloads) ? app.downloads : [],
+    updates: Array.isArray(app.updates) ? app.updates : [],
+    created_at: app.created_at || new Date().toISOString(),
     updated_at: new Date().toISOString(),
   };
 
   if (supabase) {
     try {
       const payload: any = {
+        id: normalizedApp.id,
         name: normalizedApp.name,
         slug: normalizedApp.slug,
         category: normalizedApp.category,
@@ -353,6 +434,7 @@ export async function saveApplication(app: Partial<Application>): Promise<{ succ
         full_description: normalizedApp.full_description,
         features: normalizedApp.features,
         screenshots: normalizedApp.screenshots,
+        promotional_images: normalizedApp.promotional_images,
         supported_platforms: normalizedApp.supported_platforms,
         system_requirements: normalizedApp.system_requirements,
         app_size: normalizedApp.app_size,
@@ -361,15 +443,58 @@ export async function saveApplication(app: Partial<Application>): Promise<{ succ
         is_featured: normalizedApp.is_featured,
         is_published: normalizedApp.is_published,
         sort_order: normalizedApp.sort_order,
+        updated_at: new Date().toISOString(),
       };
 
-      if (app.id && !app.id.startsWith('temp-')) {
-        await supabase.from('applications').update(payload).eq('id', app.id);
-      } else {
-        await supabase.from('applications').insert([payload]);
+      const { data: savedApp, error: saveError } = await supabase
+        .from('applications')
+        .upsert(payload, { onConflict: 'id' })
+        .select()
+        .single();
+
+      if (saveError) {
+        console.error('Supabase application save error:', saveError);
+        return { success: false, error: saveError.message };
+      }
+
+      if (savedApp?.id) {
+        normalizedApp.id = savedApp.id;
+      }
+
+      // Sync downloads in application_downloads table
+      await supabase
+        .from('application_downloads')
+        .delete()
+        .eq('application_id', normalizedApp.id);
+
+      if (normalizedApp.downloads && normalizedApp.downloads.length > 0) {
+        const downloadRows = normalizedApp.downloads.map(dl => ({
+          id: (dl.id && dl.id.length >= 32 && !dl.id.startsWith('dl-')) ? dl.id : crypto.randomUUID(),
+          application_id: normalizedApp.id,
+          platform: dl.platform || 'windows',
+          platform_name: dl.platform_name || (dl.platform === 'android' ? 'Android APK' : 'Windows Setup (Installer)'),
+          download_url: dl.download_url,
+          direct_asset_url: dl.direct_asset_url || dl.download_url,
+          is_github_release: Boolean(dl.is_github_release || String(dl.download_url).includes('github.com')),
+          github_repo: dl.github_repo || null,
+          file_name: dl.file_name || null,
+          file_size: dl.file_size || normalizedApp.app_size,
+          file_size_bytes: dl.file_size_bytes || null,
+          version: dl.version || normalizedApp.version,
+          is_active: dl.is_active !== false,
+        }));
+
+        const { error: dlError } = await supabase
+          .from('application_downloads')
+          .insert(downloadRows);
+
+        if (dlError) {
+          console.warn('Downloads sync warning:', dlError.message);
+        }
       }
     } catch (e: any) {
-      console.warn('Supabase application write error (keeping local):', e.message);
+      console.error('Supabase application save runtime error:', e);
+      return { success: false, error: e.message || 'Failed to save application to Supabase' };
     }
   }
 
@@ -387,15 +512,63 @@ export async function saveApplication(app: Partial<Application>): Promise<{ succ
 }
 
 export async function deleteApplication(id: string): Promise<{ success: boolean; error?: string }> {
+  let targetApp: Application | undefined;
+
+  // 1. Fetch current application details to identify associated storage files
   if (supabase) {
     try {
-      await supabase.from('applications').delete().eq('id', id);
-    } catch (e: any) {
-      console.warn('Supabase app delete error:', e.message);
+      const { data } = await supabase
+        .from('applications')
+        .select('*, downloads:application_downloads(*), updates:application_updates(*)')
+        .eq('id', id)
+        .maybeSingle();
+
+      if (data) {
+        targetApp = {
+          id: data.id,
+          name: data.name,
+          slug: data.slug,
+          icon: data.icon,
+          logo_url: data.logo_url,
+          screenshots: data.screenshots || [],
+          promotional_images: data.promotional_images || [],
+          downloads: data.downloads || [],
+        } as Application;
+      }
+    } catch (err: any) {
+      console.warn('Failed to retrieve app before deletion:', err?.message);
     }
   }
 
-  const currentList = getLocal<Application[]>(LS_APPS_KEY, INITIAL_APPLICATIONS);
+  if (!targetApp) {
+    const currentList = getLocal<Application[]>(LS_APPS_KEY, []);
+    targetApp = currentList.find(a => a.id === id);
+  }
+
+  // 2. Perform Database Deletion in Supabase
+  if (supabase) {
+    try {
+      await supabase.from('application_downloads').delete().eq('application_id', id);
+      await supabase.from('application_updates').delete().eq('application_id', id);
+
+      const { error } = await supabase.from('applications').delete().eq('id', id);
+      if (error) {
+        console.error('Supabase application delete error:', error);
+        return { success: false, error: error.message };
+      }
+    } catch (e: any) {
+      console.error('Supabase app delete runtime error:', e);
+      return { success: false, error: e.message || 'Failed to delete application from database' };
+    }
+  }
+
+  // 3. Clean up associated files from Supabase Storage
+  if (targetApp) {
+    await deleteStorageAssetsForApplication(targetApp);
+  }
+
+  // 4. Update local cache
+  const currentList = getLocal<Application[]>(LS_APPS_KEY, []);
   const filtered = currentList.filter(a => a.id !== id);
   setLocal(LS_APPS_KEY, filtered);
 
@@ -411,13 +584,22 @@ export async function addApplicationUpdate(update: Omit<ApplicationUpdate, 'id'>
 
   if (supabase) {
     try {
-      await supabase.from('application_updates').insert([newUpdate]);
+      const { error } = await supabase.from('application_updates').insert([newUpdate]);
+      if (error) {
+        return { success: false, error: error.message };
+      }
+      await supabase.from('applications').update({
+        version: update.version,
+        release_date: update.release_date,
+        updated_at: new Date().toISOString(),
+      }).eq('id', update.application_id);
     } catch (e: any) {
       console.warn('Supabase app update insert error:', e.message);
+      return { success: false, error: e.message };
     }
   }
 
-  const currentApps = getLocal<Application[]>(LS_APPS_KEY, INITIAL_APPLICATIONS);
+  const currentApps = getLocal<Application[]>(LS_APPS_KEY, []);
   const targetApp = currentApps.find(a => a.id === update.application_id);
   if (targetApp) {
     targetApp.version = update.version;
