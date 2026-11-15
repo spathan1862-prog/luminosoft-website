@@ -336,7 +336,9 @@ export async function fetchApplications(): Promise<Application[]> {
         promotional_images: Array.isArray(item.promotional_images) ? item.promotional_images : [],
         supported_platforms: platforms,
         system_requirements: item.system_requirements || 'Windows 10/11 or Android 8.0+',
-        app_size: item.app_size || (item.file_size_bytes ? `${(item.file_size_bytes / (1024 * 1024)).toFixed(1)} MB` : '25 MB'),
+        app_size: (item.app_size !== undefined && item.app_size !== null && item.app_size !== '') 
+          ? item.app_size 
+          : (downloadsList[0]?.file_size || (item.file_size_bytes ? `${(item.file_size_bytes / (1024 * 1024)).toFixed(1)} MB` : '')),
         version: item.version || '1.0.0',
         release_date: item.release_date || item.created_at?.slice(0, 10) || new Date().toISOString().slice(0, 10),
         download_count: item.download_count || 0,
@@ -407,13 +409,21 @@ export async function saveApplication(app: Partial<Application>): Promise<{ succ
     supported_platforms: Array.isArray(app.supported_platforms) && app.supported_platforms.length > 0 
       ? app.supported_platforms 
       : ['windows'],
-    system_requirements: app.system_requirements || 'Windows 10/11 or Android 8+',
-    app_size: app.app_size || '50 MB',
-    version: app.version || '1.0.0',
+    system_requirements: (app.system_requirements !== undefined && app.system_requirements !== null)
+      ? String(app.system_requirements).trim()
+      : 'Windows 10/11 or Android 8+',
+    app_size: (app.app_size !== undefined && app.app_size !== null)
+      ? String(app.app_size).trim()
+      : (app.downloads?.[0]?.file_size ? String(app.downloads[0].file_size).trim() : ''),
+    version: (app.version !== undefined && app.version !== null && String(app.version).trim())
+      ? String(app.version).trim()
+      : '1.0.0',
     release_date: app.release_date || new Date().toISOString().slice(0, 10),
     download_count: app.download_count || 0,
     is_featured: Boolean(app.is_featured),
-    is_published: app.is_published !== false,
+    is_published: typeof app.is_published === 'boolean'
+      ? app.is_published
+      : (currentList.find(a => a.id === appId || a.slug === slug)?.is_published ?? false),
     sort_order: app.sort_order ?? (currentList.length + 1),
     downloads: Array.isArray(app.downloads) ? app.downloads : [],
     updates: Array.isArray(app.updates) ? app.updates : [],

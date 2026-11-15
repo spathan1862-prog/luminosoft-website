@@ -7,6 +7,7 @@ import {
   fetchYouTubeTutorials, 
   recordDownloadEvent 
 } from '../lib/api';
+import { triggerDirectDownload, DOWNLOAD_FRAME_ID } from '../lib/downloadHelpers';
 import { Application, ApplicationDownload, YouTubeTutorial } from '../types';
 import { 
   Download, 
@@ -86,16 +87,27 @@ export const AppDetailPage: React.FC = () => {
 
   const handleDownload = (dl: ApplicationDownload) => {
     if (!app) return;
+    const targetUrl = dl.direct_asset_url || dl.download_url;
+    if (!targetUrl || targetUrl === '#') {
+      alert('The download package for this platform is being prepared. Please check back shortly.');
+      return;
+    }
+
     setDownloadInitiated(dl.id);
+
+    // Trigger instant silent direct download in hidden browsing context (no visible tab, no black screen)
+    triggerDirectDownload(targetUrl, dl.file_name || undefined);
+
     // Non-blocking download analytics tracking
     recordDownloadEvent(
       app.id,
       app.name,
       dl.version || app.version,
       dl.platform,
-      dl.download_url
+      targetUrl
     );
-    setTimeout(() => setDownloadInitiated(null), 4000);
+
+    setTimeout(() => setDownloadInitiated(null), 3500);
   };
 
   if (loading) {
@@ -737,18 +749,25 @@ export const AppDetailPage: React.FC = () => {
                           </span>
                         </div>
 
-                        {/* Direct Download Button */}
-                        <a
-                          href={dl.direct_asset_url || dl.download_url}
-                          download={dl.file_name || undefined}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                        {/* Direct Download Button with Silent Hidden Browsing Context */}
+                        <button
+                          type="button"
                           onClick={() => handleDownload(dl)}
-                          className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all shadow-xs hover:shadow-sm cursor-pointer"
+                          disabled={downloadInitiated === dl.id}
+                          className="w-full inline-flex items-center justify-center gap-2 py-3 px-4 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-xl transition-all shadow-xs hover:shadow-sm cursor-pointer disabled:opacity-90"
                         >
-                          <Download className="w-4 h-4" />
-                          <span>Direct Download ({dl.platform_name})</span>
-                        </a>
+                          {downloadInitiated === dl.id ? (
+                            <>
+                              <CheckCircle2 className="w-4 h-4 text-emerald-300 animate-pulse" />
+                              <span>Starting Download...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Download className="w-4 h-4" />
+                              <span>Direct Download ({dl.platform_name})</span>
+                            </>
+                          )}
+                        </button>
                       </div>
                     ))}
                   </div>
@@ -894,6 +913,16 @@ export const AppDetailPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Hidden Browsing Context for Silent Direct Downloads */}
+      <iframe
+        id={DOWNLOAD_FRAME_ID}
+        name={DOWNLOAD_FRAME_ID}
+        title="Luminosoft Direct Download Engine"
+        aria-hidden="true"
+        tabIndex={-1}
+        style={{ display: 'none', width: 0, height: 0, border: 'none', position: 'absolute', top: -9999, left: -9999 }}
+      />
     </PageLayout>
   );
 };

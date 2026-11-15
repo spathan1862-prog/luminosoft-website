@@ -37,11 +37,14 @@ import {
   Image as ImageIcon,
   ArrowLeft,
   ArrowRight,
-  Check
+  Check,
+  Save,
+  ShieldCheck
 } from 'lucide-react';
 
 export const AdminAppsPage: React.FC = () => {
   const [searchParams] = useSearchParams();
+  const hasHandledCreateParamRef = React.useRef(false);
   const [apps, setApps] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -54,6 +57,7 @@ export const AdminAppsPage: React.FC = () => {
   const [editingApp, setEditingApp] = useState<Partial<Application> | null>(null);
   const [activeTab, setActiveTab] = useState<'details' | 'media' | 'features' | 'downloads'>('details');
   const [savingApp, setSavingApp] = useState(false);
+  const [saveActionType, setSaveActionType] = useState<'draft' | 'publish' | null>(null);
   const [featureInput, setFeatureInput] = useState('');
   const [screenshotInput, setScreenshotInput] = useState('');
 
@@ -90,7 +94,8 @@ export const AdminAppsPage: React.FC = () => {
 
   useEffect(() => {
     loadApps();
-    if (searchParams.get('create') === 'true') {
+    if (searchParams.get('create') === 'true' && !hasHandledCreateParamRef.current) {
+      hasHandledCreateParamRef.current = true;
       handleOpenCreateApp();
     }
   }, [searchParams]);
@@ -107,11 +112,11 @@ export const AdminAppsPage: React.FC = () => {
       screenshots: [],
       supported_platforms: ['windows'],
       system_requirements: 'Windows 10/11 or Android 8.0+',
-      app_size: '50 MB',
+      app_size: '',
       version: '1.0.0',
       release_date: new Date().toISOString().slice(0, 10),
       is_featured: false,
-      is_published: true,
+      is_published: false,
       sort_order: apps.length + 1,
       downloads: [],
     });
@@ -123,7 +128,15 @@ export const AdminAppsPage: React.FC = () => {
   };
 
   const handleOpenEditApp = (app: Application) => {
-    setEditingApp({ ...app, downloads: app.downloads ? [...app.downloads] : [] });
+    setEditingApp({
+      ...app,
+      app_size: app.app_size || '',
+      is_published: app.is_published ?? false,
+      downloads: app.downloads ? [...app.downloads] : [],
+      features: app.features ? [...app.features] : [],
+      screenshots: app.screenshots ? [...app.screenshots] : [],
+      supported_platforms: app.supported_platforms ? [...app.supported_platforms] : ['windows'],
+    });
     setActiveTab('details');
     setFeatureInput('');
     setScreenshotInput('');
@@ -190,42 +203,58 @@ export const AdminAppsPage: React.FC = () => {
     }
   };
 
+  const updateEditingField = <K extends keyof Application>(field: K, value: Application[K]) => {
+    setEditingApp((prev) => (prev ? { ...prev, [field]: value } : prev));
+  };
+
   const handleAddFeature = () => {
-    if (!featureInput.trim() || !editingApp) return;
-    const current = editingApp.features || [];
-    setEditingApp({ ...editingApp, features: [...current, featureInput.trim()] });
+    if (!featureInput.trim()) return;
+    setEditingApp((prev) => {
+      if (!prev) return prev;
+      const current = prev.features || [];
+      return { ...prev, features: [...current, featureInput.trim()] };
+    });
     setFeatureInput('');
   };
 
   const handleRemoveFeature = (idx: number) => {
-    if (!editingApp) return;
-    setEditingApp({
-      ...editingApp,
-      features: (editingApp.features || []).filter((_, i) => i !== idx),
+    setEditingApp((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        features: (prev.features || []).filter((_, i) => i !== idx),
+      };
     });
   };
 
   const handleAddScreenshot = () => {
-    if (!screenshotInput.trim() || !editingApp) return;
-    const current = editingApp.screenshots || [];
-    setEditingApp({ ...editingApp, screenshots: [...current, screenshotInput.trim()] });
+    if (!screenshotInput.trim()) return;
+    setEditingApp((prev) => {
+      if (!prev) return prev;
+      const current = prev.screenshots || [];
+      return { ...prev, screenshots: [...current, screenshotInput.trim()] };
+    });
     setScreenshotInput('');
   };
 
   const handleRemoveScreenshot = (idx: number) => {
-    if (!editingApp) return;
-    setEditingApp({
-      ...editingApp,
-      screenshots: (editingApp.screenshots || []).filter((_, i) => i !== idx),
+    setEditingApp((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        screenshots: (prev.screenshots || []).filter((_, i) => i !== idx),
+      };
     });
   };
 
   const handlePlatformToggle = (platform: PlatformType) => {
-    if (!editingApp) return;
-    const current = editingApp.supported_platforms || [];
-    const exists = current.includes(platform);
-    const updated = exists ? current.filter((p) => p !== platform) : [...current, platform];
-    setEditingApp({ ...editingApp, supported_platforms: updated });
+    setEditingApp((prev) => {
+      if (!prev) return prev;
+      const current = prev.supported_platforms || [];
+      const exists = current.includes(platform);
+      const updated = exists ? current.filter((p) => p !== platform) : [...current, platform];
+      return { ...prev, supported_platforms: updated };
+    });
   };
 
   // Direct File Upload to Supabase Storage (<50MB)
@@ -276,10 +305,12 @@ export const AdminAppsPage: React.FC = () => {
       created_at: new Date().toISOString(),
     };
 
-    const currentDownloads = editingApp.downloads || [];
-    setEditingApp({
-      ...editingApp,
-      downloads: [...currentDownloads, newPkg],
+    setEditingApp((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        downloads: [...(prev.downloads || []), newPkg],
+      };
     });
 
     // Reset sub-form
@@ -289,14 +320,16 @@ export const AdminAppsPage: React.FC = () => {
   };
 
   const handleRemoveDownloadPackage = (id: string) => {
-    if (!editingApp) return;
-    setEditingApp({
-      ...editingApp,
-      downloads: (editingApp.downloads || []).filter((d) => d.id !== id),
+    setEditingApp((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        downloads: (prev.downloads || []).filter((d) => d.id !== id),
+      };
     });
   };
 
-  // 4-Step Wizard Navigation & Validation
+  // 4-Step Wizard Navigation & Validation (Zero database writes)
   const handleNextStep = () => {
     if (!editingApp) return;
     if (activeTab === 'details') {
@@ -330,37 +363,58 @@ export const AdminAppsPage: React.FC = () => {
     else if (activeTab === 'media') setActiveTab('details');
   };
 
-  const handleSaveApp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    // Enforce submission ONLY on Step 4
-    if (activeTab !== 'downloads') {
-      handleNextStep();
+  // Strict separation of Save as Draft vs Publish Application
+  const handleSaveApplication = async (shouldPublish: boolean) => {
+    if (savingApp) return;
+
+    if (!editingApp || !editingApp.name?.trim()) {
+      alert('Application name is required before saving.');
       return;
     }
 
-    if (!editingApp || !editingApp.name?.trim()) {
-      alert('Application name is required.');
+    if (!editingApp.category?.trim()) {
+      alert('Please select an application category.');
       return;
     }
 
     setSavingApp(true);
+    setSaveActionType(shouldPublish ? 'publish' : 'draft');
     setToastMessage(null);
+
     try {
-      const result = await saveApplication(editingApp);
+      const payload: Partial<Application> = {
+        ...editingApp,
+        name: editingApp.name.trim(),
+        slug: editingApp.slug?.trim() || undefined,
+        app_size: editingApp.app_size?.trim() || undefined,
+        is_published: shouldPublish,
+      };
+
+      const result = await saveApplication(payload);
       setSavingApp(false);
+      setSaveActionType(null);
+
       if (!result.success) {
+        setToastMessage({
+          type: 'error',
+          text: `Failed to ${shouldPublish ? 'publish' : 'save draft'}: ${result.error || 'Unknown error'}`,
+        });
         alert(`Failed to save application: ${result.error || 'Unknown error'}`);
         return;
       }
+
       setToastMessage({
         type: 'success',
-        text: `Application "${editingApp.name}" was saved and published successfully!`,
+        text: shouldPublish
+          ? `Application "${editingApp.name}" was successfully published to the live marketplace!`
+          : `Application "${editingApp.name}" was saved as an unpublished Draft.`,
       });
       setIsAppModalOpen(false);
       setEditingApp(null);
       await loadApps();
     } catch (err: any) {
       setSavingApp(false);
+      setSaveActionType(null);
       alert(`Unexpected error saving application: ${err?.message || 'Unknown error'}`);
     }
   };
@@ -672,10 +726,7 @@ export const AdminAppsPage: React.FC = () => {
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  if (activeTab === 'details') handleNextStep();
-                  else setActiveTab('media');
-                }}
+                onClick={() => setActiveTab('media')}
                 className={`py-3 px-4 border-b-2 transition-colors cursor-pointer shrink-0 ${
                   activeTab === 'media'
                     ? 'border-blue-600 text-blue-600 bg-white font-bold'
@@ -686,10 +737,7 @@ export const AdminAppsPage: React.FC = () => {
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  if (activeTab === 'details' || activeTab === 'media') handleNextStep();
-                  else setActiveTab('features');
-                }}
+                onClick={() => setActiveTab('features')}
                 className={`py-3 px-4 border-b-2 transition-colors cursor-pointer shrink-0 ${
                   activeTab === 'features'
                     ? 'border-blue-600 text-blue-600 bg-white font-bold'
@@ -700,10 +748,7 @@ export const AdminAppsPage: React.FC = () => {
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  if (activeTab !== 'downloads') handleNextStep();
-                  else setActiveTab('downloads');
-                }}
+                onClick={() => setActiveTab('downloads')}
                 className={`py-3 px-4 border-b-2 transition-colors cursor-pointer flex items-center gap-1.5 shrink-0 ${
                   activeTab === 'downloads'
                     ? 'border-blue-600 text-blue-600 bg-white font-bold'
@@ -711,11 +756,19 @@ export const AdminAppsPage: React.FC = () => {
                 }`}
               >
                 <Download className="w-3.5 h-3.5" />
-                <span>Step 4: Download Packages ({editingApp.downloads?.length || 0})</span>
+                <span>Step 4: Packages &amp; Publish</span>
               </button>
             </div>
 
-            <form onSubmit={handleSaveApp} className="p-6 overflow-y-auto space-y-4 flex-1">
+            <form
+              onSubmit={(e) => e.preventDefault()}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && (e.target as HTMLElement).tagName !== 'TEXTAREA') {
+                  e.preventDefault();
+                }
+              }}
+              className="p-6 overflow-y-auto space-y-4 flex-1"
+            >
               {/* TAB 1: BASIC DETAILS */}
               {activeTab === 'details' && (
                 <div className="space-y-4 animate-fade-in">
@@ -729,7 +782,7 @@ export const AdminAppsPage: React.FC = () => {
                         required
                         placeholder="e.g. Luminosoft Hotel Management"
                         value={editingApp.name || ''}
-                        onChange={(e) => setEditingApp({ ...editingApp, name: e.target.value })}
+                        onChange={(e) => updateEditingField('name', e.target.value)}
                         className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600/20"
                       />
                     </div>
@@ -742,7 +795,7 @@ export const AdminAppsPage: React.FC = () => {
                         type="text"
                         placeholder="e.g. hotel-management"
                         value={editingApp.slug || ''}
-                        onChange={(e) => setEditingApp({ ...editingApp, slug: e.target.value })}
+                        onChange={(e) => updateEditingField('slug', e.target.value)}
                         className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 font-mono"
                       />
                     </div>
@@ -753,7 +806,7 @@ export const AdminAppsPage: React.FC = () => {
                       </label>
                       <select
                         value={editingApp.category || 'Business Software'}
-                        onChange={(e) => setEditingApp({ ...editingApp, category: e.target.value })}
+                        onChange={(e) => updateEditingField('category', e.target.value)}
                         className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white"
                       >
                         <option value="Business Software">Business Software</option>
@@ -773,7 +826,7 @@ export const AdminAppsPage: React.FC = () => {
                         type="text"
                         placeholder="1.0.0"
                         value={editingApp.version || '1.0.0'}
-                        onChange={(e) => setEditingApp({ ...editingApp, version: e.target.value })}
+                        onChange={(e) => updateEditingField('version', e.target.value)}
                         className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 font-mono"
                       />
                     </div>
@@ -784,9 +837,9 @@ export const AdminAppsPage: React.FC = () => {
                       </label>
                       <input
                         type="text"
-                        placeholder="77.6 MB or 12.8 MB"
+                        placeholder="e.g. 74.65 or 74 MB"
                         value={editingApp.app_size || ''}
-                        onChange={(e) => setEditingApp({ ...editingApp, app_size: e.target.value })}
+                        onChange={(e) => updateEditingField('app_size', e.target.value)}
                         className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300"
                       />
                     </div>
@@ -798,7 +851,7 @@ export const AdminAppsPage: React.FC = () => {
                       <input
                         type="date"
                         value={editingApp.release_date || new Date().toISOString().slice(0, 10)}
-                        onChange={(e) => setEditingApp({ ...editingApp, release_date: e.target.value })}
+                        onChange={(e) => updateEditingField('release_date', e.target.value)}
                         className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300"
                       />
                     </div>
@@ -813,7 +866,7 @@ export const AdminAppsPage: React.FC = () => {
                       required
                       placeholder="Brief overview shown on homepage and marketplace cards..."
                       value={editingApp.short_description || ''}
-                      onChange={(e) => setEditingApp({ ...editingApp, short_description: e.target.value })}
+                      onChange={(e) => updateEditingField('short_description', e.target.value)}
                       className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300"
                     />
                   </div>
@@ -826,7 +879,7 @@ export const AdminAppsPage: React.FC = () => {
                       rows={4}
                       placeholder="Comprehensive overview displayed on the dedicated details page..."
                       value={editingApp.full_description || ''}
-                      onChange={(e) => setEditingApp({ ...editingApp, full_description: e.target.value })}
+                      onChange={(e) => updateEditingField('full_description', e.target.value)}
                       className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300"
                     />
                   </div>
@@ -839,7 +892,7 @@ export const AdminAppsPage: React.FC = () => {
                       type="text"
                       placeholder="Windows 10/11 64-bit, 4GB RAM or Android 8+"
                       value={editingApp.system_requirements || ''}
-                      onChange={(e) => setEditingApp({ ...editingApp, system_requirements: e.target.value })}
+                      onChange={(e) => updateEditingField('system_requirements', e.target.value)}
                       className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300"
                     />
                   </div>
@@ -859,7 +912,7 @@ export const AdminAppsPage: React.FC = () => {
                         required
                         placeholder="/images/hotel-icon.ico or Building"
                         value={editingApp.icon || ''}
-                        onChange={(e) => setEditingApp({ ...editingApp, icon: e.target.value })}
+                        onChange={(e) => updateEditingField('icon', e.target.value)}
                         className="flex-1 px-3 py-2 text-xs rounded-lg border border-slate-300"
                       />
                       <div className="p-1 rounded-lg border border-slate-200 bg-slate-50 flex items-center justify-center shrink-0">
@@ -992,26 +1045,16 @@ export const AdminAppsPage: React.FC = () => {
                       <input
                         type="checkbox"
                         checked={editingApp.is_featured || false}
-                        onChange={(e) => setEditingApp({ ...editingApp, is_featured: e.target.checked })}
+                        onChange={(e) => updateEditingField('is_featured', e.target.checked)}
                         className="rounded text-blue-600"
                       />
                       <span>Mark as Featured App</span>
-                    </label>
-
-                    <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-700">
-                      <input
-                        type="checkbox"
-                        checked={editingApp.is_published !== false}
-                        onChange={(e) => setEditingApp({ ...editingApp, is_published: e.target.checked })}
-                        className="rounded text-blue-600"
-                      />
-                      <span>Publish to Marketplace</span>
                     </label>
                   </div>
                 </div>
               )}
 
-              {/* TAB 4: DOWNLOAD PACKAGES (METHOD A <50MB & METHOD B >=50MB) */}
+              {/* TAB 4: DOWNLOAD PACKAGES & PRE-PUBLISH REVIEW */}
               {activeTab === 'downloads' && (
                 <div className="space-y-6 animate-fade-in">
                   {/* Current Active Packages */}
@@ -1209,6 +1252,48 @@ export const AdminAppsPage: React.FC = () => {
                       </button>
                     </div>
                   </div>
+
+                  {/* Pre-Publish Review Summary Card */}
+                  <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <ShieldCheck className="w-4 h-4 text-blue-600" />
+                        <span className="text-xs font-bold text-slate-800">Pre-Publishing Review &amp; Safety Status</span>
+                      </div>
+                      <span
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                          editingApp.is_published
+                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                            : 'bg-amber-50 text-amber-700 border-amber-200'
+                        }`}
+                      >
+                        {editingApp.is_published ? '● Live (Published)' : '○ Draft (Unpublished)'}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px]">
+                      <div className="p-2 rounded-lg bg-white border border-slate-200/60">
+                        <div className="text-slate-400 font-medium">Application</div>
+                        <div className="font-semibold text-slate-800 truncate">{editingApp.name || '(Not set)'}</div>
+                      </div>
+                      <div className="p-2 rounded-lg bg-white border border-slate-200/60">
+                        <div className="text-slate-400 font-medium">Version</div>
+                        <div className="font-semibold text-slate-800 font-mono">{editingApp.version || '1.0.0'}</div>
+                      </div>
+                      <div className="p-2 rounded-lg bg-white border border-slate-200/60">
+                        <div className="text-slate-400 font-medium">Package Size</div>
+                        <div className="font-semibold text-slate-800">{editingApp.app_size || '(Not specified)'}</div>
+                      </div>
+                      <div className="p-2 rounded-lg bg-white border border-slate-200/60">
+                        <div className="text-slate-400 font-medium">Packages Attached</div>
+                        <div className="font-semibold text-slate-800 font-mono">{(editingApp.downloads || []).length} package(s)</div>
+                      </div>
+                    </div>
+
+                    <p className="text-[11px] text-slate-500">
+                      <strong>Publishing Safety Rule:</strong> Moving between wizard steps or entering data never saves or publishes automatically. Choose <strong>Save as Draft</strong> to keep this application hidden from the live marketplace, or <strong>Publish Application</strong> to make it live for customers.
+                    </p>
+                  </div>
                 </div>
               )}
 
@@ -1236,8 +1321,8 @@ export const AdminAppsPage: React.FC = () => {
                   )}
                 </div>
 
-                <div className="flex items-center gap-3">
-                  {/* Step 1, 2, 3: NEXT ONLY. Strictly NO Save Application. */}
+                <div className="flex items-center gap-2.5">
+                  {/* Step 1, 2, 3: NEXT ONLY. Strictly NO Save/Publish. */}
                   {activeTab !== 'downloads' ? (
                     <button
                       type="button"
@@ -1254,24 +1339,46 @@ export const AdminAppsPage: React.FC = () => {
                       <ArrowRight className="w-3.5 h-3.5" />
                     </button>
                   ) : (
-                    /* Step 4: NOW show Save Application! */
-                    <button
-                      type="submit"
-                      disabled={savingApp}
-                      className="inline-flex items-center gap-2 px-6 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm disabled:opacity-50 cursor-pointer"
-                    >
-                      {savingApp ? (
-                        <>
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          <span>Saving Application...</span>
-                        </>
-                      ) : (
-                        <>
-                          <span>Save Application</span>
-                          <Check className="w-3.5 h-3.5" />
-                        </>
-                      )}
-                    </button>
+                    /* Step 4: EXPLICIT Draft or Publish Actions ONLY */
+                    <>
+                      <button
+                        type="button"
+                        disabled={savingApp}
+                        onClick={() => handleSaveApplication(false)}
+                        className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg shadow-2xs disabled:opacity-50 cursor-pointer transition-colors"
+                      >
+                        {savingApp && saveActionType === 'draft' ? (
+                          <>
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            <span>Saving Draft...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Save className="w-3.5 h-3.5 text-slate-600" />
+                            <span>Save as Draft</span>
+                          </>
+                        )}
+                      </button>
+
+                      <button
+                        type="button"
+                        disabled={savingApp}
+                        onClick={() => handleSaveApplication(true)}
+                        className="inline-flex items-center gap-1.5 px-5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-xs disabled:opacity-50 cursor-pointer transition-colors"
+                      >
+                        {savingApp && saveActionType === 'publish' ? (
+                          <>
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            <span>Publishing...</span>
+                          </>
+                        ) : (
+                          <>
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            <span>Publish Application</span>
+                          </>
+                        )}
+                      </button>
+                    </>
                   )}
                 </div>
               </div>
